@@ -30,6 +30,7 @@ import java.util.List;
  * @create 2023/7/17 16:50
  **/
 @Service
+
 public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements IServeService {
 
     @Autowired
@@ -82,5 +83,20 @@ public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements
 
         }
 
+    }
+
+    /**
+     * 删除区域服务
+     * @param id
+     */
+    @Override
+    public void deleteById(Long id) {
+        // 要求当状态为草稿状态方可删除
+        Serve serve = baseMapper.selectById(id);
+        if (ObjectUtil.isNull(serve) || serve.getSaleStatus() != 0){
+            throw new ForbiddenOperationException("删除失败, 当前区域服务不是草稿状态");
+        }
+        //根据主键删除
+        baseMapper.deleteById(id);
     }
 }

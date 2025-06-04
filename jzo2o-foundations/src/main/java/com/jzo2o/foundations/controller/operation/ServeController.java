@@ -64,6 +64,12 @@ public class ServeController {
         serveService.addServe(serveDtoList);
     }
 
+    /**
+     * 点击区域价格进行修改，本质就是根据区域服务的id对price字段进行修改
+     * 接口路径：PUT  /foundations/operation/serve/{id}
+     * @param id
+     * @param price
+     */
     @PutMapping("/{id}")
     @ApiOperation("区域服务修改价格")
     @ApiImplicitParams({
@@ -77,4 +83,16 @@ public class ServeController {
         serveService.updateById(serve);
     }
 
+    /**
+     * 删除区域服务
+     * @param id
+     */
+    @DeleteMapping("/{id}")
+    @ApiOperation("区域服务删除")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "区域服务id", required = true, dataTypeClass = Long.class)
+    })
+    public void delete(@PathVariable("id") Long id) {
+        serveService.deleteById(id);
+    }
 }

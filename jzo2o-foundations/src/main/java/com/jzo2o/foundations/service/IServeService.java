@@ -30,4 +30,10 @@ public interface IServeService extends IService<Serve> {
      * @param serveDtoList
      */
     void addServe(List<ServeUpsertReqDTO> serveDtoList);
+
+    /**
+     * 删除区域服务
+     * @param id
+     */
+    void deleteById(Long id);
 }
