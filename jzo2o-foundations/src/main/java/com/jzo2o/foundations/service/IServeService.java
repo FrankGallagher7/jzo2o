@@ -48,4 +48,16 @@ public interface IServeService extends IService<Serve> {
      * @param id
      */
     void deactivate(Long id);
+
+    /**
+     * 设置区域服务为热门
+     * @param id
+     */
+    void onHot(Long id);
+
+    /**
+     * 设置区域服务为非热门
+     * @param id
+     */
+    void offHot(Long id);
 }

@@ -137,4 +137,39 @@ public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements
         serve.setSaleStatus(1);
         baseMapper.updateById(serve);
     }
+
+    /**
+     * 设置区域服务为热门
+     *
+     * @param id
+     */
+    @Override
+    public void onHot(Long id) {
+        // 获取当前时间戳
+        long timeStamp = System.currentTimeMillis();
+        Serve serve = baseMapper.selectById(id);
+        if (ObjectUtil.isEmpty(serve)) {
+            throw new ForbiddenOperationException("当前服务不存在");
+        }
+        serve.setIsHot(1);
+        serve.setHotTimeStamp(timeStamp);
+        // 更新服务状态为热门
+        baseMapper.updateById(serve);
+    }
+
+    /**
+     * 设置区域服务为非热门
+     * @param id
+     */
+    @Override
+    public void offHot(Long id) {
+        Serve serve = baseMapper.selectById(id);
+        if (ObjectUtil.isEmpty(serve)) {
+            throw new ForbiddenOperationException("当前服务不存在");
+        }
+        // 删除服务状态为热门
+        serve.setIsHot(0);
+        serve.setHotTimeStamp(null);
+        baseMapper.updateById(serve);
+    }
 }

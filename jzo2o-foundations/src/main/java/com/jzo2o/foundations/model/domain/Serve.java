@@ -60,6 +60,7 @@ public class Serve implements Serializable {
     /**
      * 更新为热门的时间戳
      */
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Long hotTimeStamp;
 
     /**

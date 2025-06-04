@@ -126,5 +126,33 @@ public class ServeController {
         serveService.deactivate(id);
     }
 
+    /**
+     *
+     * 设置区域服务为热门
+     * @param id
+     */
+    @PutMapping("/onHot/{id}")
+    @ApiOperation("设置区域服务热门")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "区域服务id", required = true, dataTypeClass = Long.class),
+    })
+    public void onHot(@PathVariable("id") Long id) {
+        serveService.onHot(id);
+    }
+
+    /**
+     *
+     * 设置区域服务为非热门
+     * @param id
+     */
+    @PutMapping("/offHot/{id}")
+    @ApiOperation("设置区域服务非热门")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "区域服务id", required = true, dataTypeClass = Long.class),
+    })
+    public void offHot(@PathVariable("id") Long id) {
+        serveService.offHot(id);
+    }
+
 
 }
