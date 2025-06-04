@@ -99,4 +99,25 @@ public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements
         //根据主键删除
         baseMapper.deleteById(id);
     }
+
+    /**
+     * 区域服务列表上架
+     * @param id
+     */
+    @Override
+    public void active(Long id) {
+        // 1) 区域服务当前非上架状态
+        Serve serve = baseMapper.selectById(id);
+        if (ObjectUtil.isEmpty(serve) || serve.getSaleStatus() == 2) {
+            throw new ForbiddenOperationException("当前区域服务是上架状态");
+        }
+        // 2) 服务项目是启用状态
+        ServeItem serveItem = serveItemMapper.selectById(serve.getServeItemId());
+        if (ObjectUtil.isEmpty(serveItem) || serveItem.getActiveStatus() != 2) {
+            throw new ForbiddenOperationException("服务项不存在或未启用");
+        }
+        // 3) 更新服务状态为上架状态
+        serve.setSaleStatus(2);
+        baseMapper.updateById(serve);
+    }
 }

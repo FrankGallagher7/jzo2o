@@ -95,4 +95,21 @@ public class ServeController {
     public void delete(@PathVariable("id") Long id) {
         serveService.deleteById(id);
     }
+
+    /**
+     * 上架
+     * 在区域服务列表上架，此服务在该区域将生效（本质就是要修改区域服务的状态为2）
+     * 上架成功的必要条件有两个：1) 区域服务当前非上架状态   2) 服务项目是启用状态
+     * 接口路径：PUT  /foundations/operation/serve/onSale/{id}
+     * @param id
+     */
+    @PutMapping("/onSale/{id}")
+    @ApiOperation("区域服务上架")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "区域服务id", required = true, dataTypeClass = Long.class),
+    })
+    public void activate(@PathVariable("id") Long id) {
+        serveService.active(id);
+    }
+
 }

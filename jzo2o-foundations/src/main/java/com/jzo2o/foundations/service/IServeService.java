@@ -36,4 +36,10 @@ public interface IServeService extends IService<Serve> {
      * @param id
      */
     void deleteById(Long id);
+
+    /**
+     * 区域服务列表上架
+     * @param id
+     */
+    void active(Long id);
 }
