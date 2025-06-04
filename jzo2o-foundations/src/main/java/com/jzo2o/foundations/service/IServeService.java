@@ -4,8 +4,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.jzo2o.common.model.PageResult;
 import com.jzo2o.foundations.model.domain.Serve;
 import com.jzo2o.foundations.model.dto.request.ServePageQueryReqDTO;
+import com.jzo2o.foundations.model.dto.request.ServeUpsertReqDTO;
 import com.jzo2o.foundations.model.dto.response.RegionResDTO;
 import com.jzo2o.foundations.model.dto.response.ServeResDTO;
+
+import java.util.List;
 
 /**
  * 区域管理
@@ -21,4 +24,10 @@ public interface IServeService extends IService<Serve> {
      * @return
      */
     PageResult<ServeResDTO> pageQuery(ServePageQueryReqDTO servePageQueryReqDTO);
+
+    /**
+     * 某个区域下新增服务信息
+     * @param serveDtoList
+     */
+    void addServe(List<ServeUpsertReqDTO> serveDtoList);
 }
