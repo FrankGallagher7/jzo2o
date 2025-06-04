@@ -120,4 +120,21 @@ public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements
         serve.setSaleStatus(2);
         baseMapper.updateById(serve);
     }
+
+    /**
+     * 区域服务列表下架
+     * @param id
+     */
+    @Override
+    public void deactivate(Long id) {
+        // 区域服务当前为上架状态
+        Serve serve = baseMapper.selectById(id);
+        if (ObjectUtil.isEmpty(serve) || serve.getSaleStatus() != 2) {
+            throw new ForbiddenOperationException("当前区域服务是下架状态");
+        }
+
+        // 更新服务状态为下架状态
+        serve.setSaleStatus(1);
+        baseMapper.updateById(serve);
+    }
 }

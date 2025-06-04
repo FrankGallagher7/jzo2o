@@ -112,4 +112,19 @@ public class ServeController {
         serveService.active(id);
     }
 
+
+    /**
+     * 在区域服务列表下架（本质就是要修改区域服务的状态为1）,下架成功的必要条件是区域服务当前为上架状态
+     * @param id
+     */
+    @PutMapping("/offSale/{id}")
+    @ApiOperation("区域服务下架")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "区域服务id", required = true, dataTypeClass = Long.class),
+    })
+    public void deactivate(@PathVariable("id") Long id) {
+        serveService.deactivate(id);
+    }
+
+
 }

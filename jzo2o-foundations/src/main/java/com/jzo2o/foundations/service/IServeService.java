@@ -42,4 +42,10 @@ public interface IServeService extends IService<Serve> {
      * @param id
      */
     void active(Long id);
+
+    /**
+     * 区域服务列表下架
+     * @param id
+     */
+    void deactivate(Long id);
 }
