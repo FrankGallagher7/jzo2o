@@ -46,4 +46,11 @@ public interface IAddressBookService extends IService<AddressBook> {
      * @return
      */
     PageResult<AddressBookResDTO> pageQuery(AddressBookPageQueryReqDTO pageQueryReqDTO);
+
+    /**
+     * 根据地址id对地址进行编辑
+     * @param id
+     * @param addressBookResDTO
+     */
+    void updateAddress(Long id, AddressBookResDTO addressBookResDTO);
 }
