@@ -27,4 +27,10 @@ public interface IAddressBookService extends IService<AddressBook> {
      * @return 地址编码
      */
     List<AddressBookResDTO> getByUserIdAndCity(Long userId, String cityCode);
+
+    /**
+     * 查询用户默认地址值
+     * @return
+     */
+    AddressBookResDTO findDefaultAddress();
 }
