@@ -15,7 +15,9 @@ import com.jzo2o.foundations.model.domain.ServeItem;
 import com.jzo2o.foundations.model.dto.request.ServePageQueryReqDTO;
 import com.jzo2o.foundations.model.dto.request.ServeUpsertReqDTO;
 import com.jzo2o.foundations.model.dto.response.RegionResDTO;
+import com.jzo2o.foundations.model.dto.response.ServeCategoryResDTO;
 import com.jzo2o.foundations.model.dto.response.ServeResDTO;
+import com.jzo2o.foundations.model.dto.response.ServeSimpleResDTO;
 import com.jzo2o.foundations.service.IServeService;
 import com.jzo2o.mysql.utils.PageHelperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -171,5 +173,33 @@ public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements
         serve.setIsHot(0);
         serve.setHotTimeStamp(null);
         baseMapper.updateById(serve);
+    }
+
+    /**
+     * 根据区域id查询服务列表
+     * @param regionId
+     * @return
+     */
+    @Override
+    public List<ServeCategoryResDTO> findServeByRegionId(Long regionId) {
+        // 1.判断是否有该地区，或者该区是否开放
+        Region region = regionMapper.selectById(regionId);
+        if (ObjectUtil.isNull(region) || region.getActiveStatus() != 2) {
+            return List.of();
+        }
+        // 2.获取地区服务列表
+        List<ServeCategoryResDTO> list = baseMapper.findServeByRegionId(regionId);
+        if (list.isEmpty()) {
+            return List.of();
+        }
+        // 3.切割（区域前两个，每个区域项目4个）
+        // 区域
+        List<ServeCategoryResDTO> serveTypeList = list.subList(0, Math.min(list.size(), 2));
+        // 服务
+        serveTypeList.forEach(s -> {
+            List<ServeSimpleResDTO> serveSimpleResDTOS = s.getServeResDTOList().subList(0, Math.min(s.getServeResDTOList().size(), 4));
+            s.setServeResDTOList(serveSimpleResDTOS);
+        });
+        return serveTypeList;
     }
 }

@@ -15,4 +15,37 @@
                  inner join serve_type st on si.serve_type_id = st.id
         where s.region_id = #{regionId}
     </select>
+    <resultMap id="regionServe01" type="com.jzo2o.foundations.model.dto.response.ServeCategoryResDTO">
+        <result column="serveTypeId" property="serveTypeId"></result>
+        <result column="serveTypeName" property="serveTypeName"></result>
+        <result column="serveTypeIcon" property="serveTypeIcon"></result>
+        <result column="serveTypeSortNum" property="serveTypeSortNum"></result>
+        <result column="cityCode" property="cityCode"></result>
+        <result column="serveTypeSortNum" property="serveTypeSortNum"></result>
+        <collection property="serveResDTOList" ofType="com.jzo2o.foundations.model.dto.response.ServeSimpleResDTO">
+            <result column="id" property="id"></result>
+            <result column="serveItemId" property="serveItemId"></result>
+            <result column="serveItemName" property="serveItemName"></result>
+            <result column="serveItemIcon" property="serveItemIcon"></result>
+            <result column="serveItemSortNum" property="serveItemSortNum"></result>
+        </collection>
+    </resultMap>
+    <select id="findServeByRegionId" resultMap="regionServe01" >
+        select
+            st.id as serveTypeId,
+            st.name as serveTypeName,
+            st.img  as serveTypeIcon,
+            st.sort_num as serveTypeSortNum,
+            s.city_code as cityCode,
+            s.id as id,
+            s.serve_item_id as serveItemId,
+            si.name as serveItemName,
+            si.serve_item_icon as serveItemIcon,
+            si.sort_num as serveItemSortNum
+        from serve s
+                 inner join serve_item si on s.serve_item_id = si.id
+                 inner join serve_type st on si.serve_type_id = st.id
+        where s.region_id = #{regionId} and s.sale_status = 2
+        order by st.sort_num, si.sort_num
+    </select>
 </mapper>
