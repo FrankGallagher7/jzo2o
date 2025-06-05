@@ -33,4 +33,10 @@ public interface IAddressBookService extends IService<AddressBook> {
      * @return
      */
     AddressBookResDTO findDefaultAddress();
+
+    /**
+     * 新增地址
+     * @param addressBookResDTO
+     */
+    void saveAddress(AddressBookResDTO addressBookResDTO);
 }

@@ -1,6 +1,7 @@
 package com.jzo2o.customer.controller.consumer;
 
 import com.jzo2o.api.customer.dto.response.AddressBookResDTO;
+import com.jzo2o.customer.model.domain.AddressBook;
 import com.jzo2o.customer.service.IAddressBookService;
 import com.jzo2o.customer.service.ICommonUserService;
 import io.swagger.annotations.Api;
@@ -20,7 +21,7 @@ import javax.annotation.Resource;
  **/
 @RestController("consumerAddressController")
 @RequestMapping("/consumer/address-book")
-@Api(tags = "用户端 - 普通用户相关接口")
+@Api(tags = "用户端 - 地址相关接口")
 public class AddressController {
 
 
@@ -35,6 +36,16 @@ public class AddressController {
     @ApiOperation("查询用户默认地址值")
     public AddressBookResDTO findDefaultAddress(){
         return addressBookService.findDefaultAddress();
+    }
+
+    /**
+     * 新增地址
+     * @param addressBookResDTO
+     */
+    @PostMapping
+    @ApiOperation("新增地址")
+    public void saveAddress(@RequestBody AddressBookResDTO addressBookResDTO){
+        addressBookService.saveAddress(addressBookResDTO);
     }
 
 }
