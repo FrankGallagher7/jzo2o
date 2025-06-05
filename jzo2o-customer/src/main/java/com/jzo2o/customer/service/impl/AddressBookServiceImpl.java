@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jzo2o.api.customer.ServeSkillApi;
@@ -172,5 +173,19 @@ public class AddressBookServiceImpl extends ServiceImpl<AddressBookMapper, Addre
         addressBookResDTO.setId(id);
         AddressBook addressBook = BeanUtil.copyProperties(addressBookResDTO, AddressBook.class);
         baseMapper.updateById(addressBook);
+    }
+
+    /**
+     * 批量删除地址
+     *
+     * @param ids
+     */
+    @Override
+    public void removeUpdateByIds(List<Long> ids) {
+        LambdaUpdateWrapper<AddressBook> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.in(AddressBook::getId, ids)
+                .set(AddressBook::getIsDeleted, 1);
+
+        baseMapper.update(null, wrapper);
     }
 }

@@ -53,4 +53,10 @@ public interface IAddressBookService extends IService<AddressBook> {
      * @param addressBookResDTO
      */
     void updateAddress(Long id, AddressBookResDTO addressBookResDTO);
+
+    /**
+     * 批量删除地址
+     * @param ids
+     */
+    void removeUpdateByIds(List<Long> ids);
 }

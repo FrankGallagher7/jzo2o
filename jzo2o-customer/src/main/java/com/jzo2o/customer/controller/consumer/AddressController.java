@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 普通用户相关接口
@@ -83,6 +84,16 @@ public class AddressController {
     @ApiOperation("根据地址id对地址进行编辑")
     public void update(@PathVariable Long id, @RequestBody AddressBookResDTO addressBookResDTO) {
         addressBookService.updateAddress(id, addressBookResDTO);
+    }
+
+    /**
+     * 批量删除地址
+     * @param ids
+     */
+    @DeleteMapping("/batch")
+    @ApiOperation("批量删除地址")
+    public void deleteBatch(@RequestBody List<Long> ids) {
+        addressBookService.removeUpdateByIds(ids);
     }
 
 }
