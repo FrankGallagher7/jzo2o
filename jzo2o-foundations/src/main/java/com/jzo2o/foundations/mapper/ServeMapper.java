@@ -30,4 +30,11 @@ public interface ServeMapper extends BaseMapper<Serve> {
      * @return
      */
     List<ServeCategoryResDTO> findServeByRegionId(Long regionId);
+
+    /**
+     * 根据地区id查询热点服务
+     * @param regionId
+     * @return
+     */
+    List<ServeAggregationSimpleResDTO> findHotServeByRegionId(Long regionId);
 }

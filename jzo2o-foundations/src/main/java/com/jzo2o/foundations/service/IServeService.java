@@ -6,6 +6,7 @@ import com.jzo2o.foundations.model.domain.Serve;
 import com.jzo2o.foundations.model.dto.request.ServePageQueryReqDTO;
 import com.jzo2o.foundations.model.dto.request.ServeUpsertReqDTO;
 import com.jzo2o.foundations.model.dto.response.RegionResDTO;
+import com.jzo2o.foundations.model.dto.response.ServeAggregationSimpleResDTO;
 import com.jzo2o.foundations.model.dto.response.ServeCategoryResDTO;
 import com.jzo2o.foundations.model.dto.response.ServeResDTO;
 
@@ -68,4 +69,13 @@ public interface IServeService extends IService<Serve> {
      * @return
      */
     List<ServeCategoryResDTO> findServeByRegionId(Long regionId);
+
+
+    /**
+     *
+     * 根据地区id查询热点服务
+     * @param regionId
+     * @return
+     */
+    List<ServeAggregationSimpleResDTO> findHotServeByRegionId(Long regionId);
 }

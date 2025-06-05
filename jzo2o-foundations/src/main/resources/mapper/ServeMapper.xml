@@ -48,4 +48,22 @@
         where s.region_id = #{regionId} and s.sale_status = 2
         order by st.sort_num, si.sort_num
     </select>
+    <select id="findHotServeByRegionId"
+            resultType="com.jzo2o.foundations.model.dto.response.ServeAggregationSimpleResDTO">
+        select
+                s.id as id,
+                s.city_code as cityCode,
+                si.name as serveItemName,
+                s.serve_item_id as serveItemId,
+                si.unit as unit,
+                si.detail_img as detailImg,
+                s.price as price,
+                si.img as serveItemImg
+        from serve s
+                 inner join serve_item si on s.serve_item_id = si.id
+        where region_id = #{regionId}
+          and s.is_hot = 1
+          and s.sale_status = 2
+        order by s.update_time desc
+    </select>
 </mapper>

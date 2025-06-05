@@ -14,10 +14,7 @@ import com.jzo2o.foundations.model.domain.Serve;
 import com.jzo2o.foundations.model.domain.ServeItem;
 import com.jzo2o.foundations.model.dto.request.ServePageQueryReqDTO;
 import com.jzo2o.foundations.model.dto.request.ServeUpsertReqDTO;
-import com.jzo2o.foundations.model.dto.response.RegionResDTO;
-import com.jzo2o.foundations.model.dto.response.ServeCategoryResDTO;
-import com.jzo2o.foundations.model.dto.response.ServeResDTO;
-import com.jzo2o.foundations.model.dto.response.ServeSimpleResDTO;
+import com.jzo2o.foundations.model.dto.response.*;
 import com.jzo2o.foundations.service.IServeService;
 import com.jzo2o.mysql.utils.PageHelperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -201,5 +198,22 @@ public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements
             s.setServeResDTOList(serveSimpleResDTOS);
         });
         return serveTypeList;
+    }
+
+    /**
+     * 根据地区id查询热点服务
+     * @param regionId
+     * @return
+     */
+    @Override
+    public List<ServeAggregationSimpleResDTO> findHotServeByRegionId(Long regionId) {
+        // 1.查询地区
+        Region region = regionMapper.selectById(regionId);
+        if (ObjectUtil.isNull(region) || region.getActiveStatus() != 2) {
+            throw new ForbiddenOperationException("当前地区不存在或未开放");
+        }
+        // 2.查询热点服务
+        List<ServeAggregationSimpleResDTO> list = baseMapper.findHotServeByRegionId(regionId);
+        return list;
     }
 }
