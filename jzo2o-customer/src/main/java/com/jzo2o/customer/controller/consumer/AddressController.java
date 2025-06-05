@@ -96,4 +96,16 @@ public class AddressController {
         addressBookService.removeUpdateByIds(ids);
     }
 
+    /**
+     * 设置默认地址
+     * @param id 地址id
+     * @param flag 是否默认
+     */
+    @PutMapping("/default")
+    @ApiOperation("设置默认地址")
+    public void setDefault(@RequestParam Long id,
+                           @RequestParam Long flag) {
+        addressBookService.setDefaultAddress(id,flag);
+    }
+
 }

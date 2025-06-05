@@ -59,4 +59,11 @@ public interface IAddressBookService extends IService<AddressBook> {
      * @param ids
      */
     void removeUpdateByIds(List<Long> ids);
+
+    /**
+     * 设置默认地址
+     * @param id
+     * @param flag
+     */
+    void setDefaultAddress(Long id, Long flag);
 }

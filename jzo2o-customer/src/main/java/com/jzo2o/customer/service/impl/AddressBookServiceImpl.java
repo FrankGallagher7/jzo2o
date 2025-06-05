@@ -21,6 +21,7 @@ import com.jzo2o.customer.model.dto.request.AddressBookPageQueryReqDTO;
 import com.jzo2o.customer.service.IAddressBookService;
 import com.jzo2o.mvc.utils.UserContext;
 import com.jzo2o.mysql.utils.PageUtils;
+import org.apache.tomcat.jni.Address;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -187,5 +188,40 @@ public class AddressBookServiceImpl extends ServiceImpl<AddressBookMapper, Addre
                 .set(AddressBook::getIsDeleted, 1);
 
         baseMapper.update(null, wrapper);
+    }
+
+    /**
+     * 设置默认地址
+     * @param id 地址id
+     * @param flag 是否默认
+     */
+    @Override
+    public void setDefaultAddress(Long id, Long flag) {
+        // 获取用户id
+        Long userId = UserContext.currentUserId();
+        AddressBook addressBook = baseMapper.selectById(id);
+        // 1.设置地址为默认地址
+        if (flag == 1) {
+            // 当前地址为默认地址
+            if (addressBook.getIsDefault() == 1) {
+                return;
+            }
+            // 当前地址为非默认地址，删除其他默认地址，并设置改地址为默认地址
+            baseMapper.update(null,new LambdaUpdateWrapper<AddressBook>()
+                    .eq(AddressBook::getUserId,userId)
+                    .eq(AddressBook::getIsDefault,1)
+                    .eq(AddressBook::getIsDeleted, 0)
+                    .set(AddressBook::getIsDefault,0));
+            // 设置改地址为默认地址
+            addressBook.setIsDefault(1);
+            baseMapper.updateById(addressBook);
+        }
+        // 2.设置地址为非默认地址
+        // 当前地址为非默认地址
+        if (addressBook.getIsDefault() == 0) {
+            return;
+        }
+        // 当前地址为默认地址
+        baseMapper.updateById(addressBook);
     }
 }
