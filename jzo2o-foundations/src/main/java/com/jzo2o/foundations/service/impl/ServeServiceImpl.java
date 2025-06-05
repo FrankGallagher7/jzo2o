@@ -216,4 +216,31 @@ public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements
         List<ServeAggregationSimpleResDTO> list = baseMapper.findHotServeByRegionId(regionId);
         return list;
     }
+
+    /**
+     * 根据服务id查询服务详情
+     * @param id
+     * @return
+     */
+    @Override
+    public ServeAggregationSimpleResDTO findById(Long id) {
+        // 1.查询是否有该服务
+        Serve serve = baseMapper.selectById(id);
+        if (ObjectUtil.isNull(serve)) {
+            throw new ForbiddenOperationException("当前服务不存在");
+        }
+        // 2.查询服务详情
+        // 查询服务项目信息
+        ServeItem serveItem = serveItemMapper.selectById(serve.getServeItemId());
+        if (ObjectUtil.isNull(serveItem)) {
+            throw new ForbiddenOperationException("当前服务项不存在");
+        }
+        // 3.封装
+        ServeAggregationSimpleResDTO serveAggregationSimpleResDTO = BeanUtil.copyProperties(serve, ServeAggregationSimpleResDTO.class);
+        serveAggregationSimpleResDTO.setServeItemName(serveItem.getName());
+        serveAggregationSimpleResDTO.setServeItemImg(serveItem.getImg());
+        serveAggregationSimpleResDTO.setDetailImg(serveItem.getDetailImg());
+        serveAggregationSimpleResDTO.setUnit(serveItem.getUnit());
+        return serveAggregationSimpleResDTO;
+    }
 }

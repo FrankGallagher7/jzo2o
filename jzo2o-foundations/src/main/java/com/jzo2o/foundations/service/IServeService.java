@@ -78,4 +78,12 @@ public interface IServeService extends IService<Serve> {
      * @return
      */
     List<ServeAggregationSimpleResDTO> findHotServeByRegionId(Long regionId);
+
+
+    /**
+     * 查询服务详情
+     * @param id
+     * @return
+     */
+    ServeAggregationSimpleResDTO findById(Long id);
 }
