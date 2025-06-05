@@ -39,4 +39,11 @@ public interface IAddressBookService extends IService<AddressBook> {
      * @param addressBookResDTO
      */
     void saveAddress(AddressBookResDTO addressBookResDTO);
+
+    /**
+     * 分页查询地址
+     * @param pageQueryReqDTO
+     * @return
+     */
+    PageResult<AddressBookResDTO> pageQuery(AddressBookPageQueryReqDTO pageQueryReqDTO);
 }

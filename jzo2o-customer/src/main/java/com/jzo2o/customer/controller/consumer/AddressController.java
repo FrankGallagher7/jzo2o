@@ -1,7 +1,9 @@
 package com.jzo2o.customer.controller.consumer;
 
 import com.jzo2o.api.customer.dto.response.AddressBookResDTO;
+import com.jzo2o.common.model.PageResult;
 import com.jzo2o.customer.model.domain.AddressBook;
+import com.jzo2o.customer.model.dto.request.AddressBookPageQueryReqDTO;
 import com.jzo2o.customer.service.IAddressBookService;
 import com.jzo2o.customer.service.ICommonUserService;
 import io.swagger.annotations.Api;
@@ -46,6 +48,17 @@ public class AddressController {
     @ApiOperation("新增地址")
     public void saveAddress(@RequestBody AddressBookResDTO addressBookResDTO){
         addressBookService.saveAddress(addressBookResDTO);
+    }
+
+    /**
+     * 分页查询地址
+     * @param pageQueryReqDTO
+     * @return
+     */
+    @GetMapping("/page")
+    @ApiOperation("分页查询地址")
+    public PageResult<AddressBookResDTO> page(AddressBookPageQueryReqDTO pageQueryReqDTO) {
+        return addressBookService.pageQuery(pageQueryReqDTO);
     }
 
 }
