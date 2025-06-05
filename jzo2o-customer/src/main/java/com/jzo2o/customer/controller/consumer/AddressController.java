@@ -1,5 +1,6 @@
 package com.jzo2o.customer.controller.consumer;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.jzo2o.api.customer.dto.response.AddressBookResDTO;
 import com.jzo2o.common.model.PageResult;
 import com.jzo2o.customer.model.domain.AddressBook;
@@ -59,6 +60,16 @@ public class AddressController {
     @ApiOperation("分页查询地址")
     public PageResult<AddressBookResDTO> page(AddressBookPageQueryReqDTO pageQueryReqDTO) {
         return addressBookService.pageQuery(pageQueryReqDTO);
+    }
+
+    /**
+     * 根据地址id查询地址详情
+     */
+    @GetMapping("/{id}")
+    @ApiOperation("根据地址id查询地址详情")
+    public AddressBookResDTO getById(@PathVariable Long id) {
+        AddressBook addressBook = addressBookService.getById(id);
+        return BeanUtil.copyProperties(addressBook, AddressBookResDTO.class);
     }
 
 }
