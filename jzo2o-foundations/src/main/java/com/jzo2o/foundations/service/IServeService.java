@@ -5,10 +5,7 @@ import com.jzo2o.common.model.PageResult;
 import com.jzo2o.foundations.model.domain.Serve;
 import com.jzo2o.foundations.model.dto.request.ServePageQueryReqDTO;
 import com.jzo2o.foundations.model.dto.request.ServeUpsertReqDTO;
-import com.jzo2o.foundations.model.dto.response.RegionResDTO;
-import com.jzo2o.foundations.model.dto.response.ServeAggregationSimpleResDTO;
-import com.jzo2o.foundations.model.dto.response.ServeCategoryResDTO;
-import com.jzo2o.foundations.model.dto.response.ServeResDTO;
+import com.jzo2o.foundations.model.dto.response.*;
 
 import java.util.List;
 
@@ -86,4 +83,11 @@ public interface IServeService extends IService<Serve> {
      * @return
      */
     ServeAggregationSimpleResDTO findById(Long id);
+
+    /**
+     * 根据区域id查询全部服务
+     * @param regionId
+     * @return
+     */
+    List<ServeAggregationTypeSimpleResDTO> findAllServeTypeList(Long regionId);
 }

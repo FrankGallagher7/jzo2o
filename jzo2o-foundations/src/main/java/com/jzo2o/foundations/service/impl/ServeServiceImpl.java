@@ -243,4 +243,20 @@ public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements
         serveAggregationSimpleResDTO.setUnit(serveItem.getUnit());
         return serveAggregationSimpleResDTO;
     }
+
+    /**
+     * 根据区域id查询全部服务
+     * @param regionId
+     * @return
+     */
+    @Override
+    public List<ServeAggregationTypeSimpleResDTO> findAllServeTypeList(Long regionId) {
+        // 1.查询是否有该地区
+        Region region = regionMapper.selectById(regionId);
+        if (ObjectUtil.isNull(region)) {
+            return List.of();
+        }
+        // 2.根据区域id查询服务类型列表
+        return baseMapper.findAllServeTypeList(regionId);
+    }
 }

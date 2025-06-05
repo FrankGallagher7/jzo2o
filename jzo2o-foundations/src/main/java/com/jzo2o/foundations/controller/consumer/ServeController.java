@@ -2,7 +2,9 @@ package com.jzo2o.foundations.controller.consumer;
 
 
 import com.jzo2o.foundations.model.dto.response.ServeAggregationSimpleResDTO;
+import com.jzo2o.foundations.model.dto.response.ServeAggregationTypeSimpleResDTO;
 import com.jzo2o.foundations.model.dto.response.ServeCategoryResDTO;
+import com.jzo2o.foundations.model.dto.response.ServeTypeResDTO;
 import com.jzo2o.foundations.service.IServeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -62,5 +64,16 @@ public class ServeController {
     @ApiOperation("查询服务详情")
     public ServeAggregationSimpleResDTO findById(@PathVariable("id") Long id) {
         return serveService.findById(id);
+    }
+
+    /**
+     * 根据区域id查询全部服务
+     * @param regionId
+     */
+    @GetMapping("/serveTypeList")
+    @ApiOperation("查询全部服务")
+    public List<ServeAggregationTypeSimpleResDTO> findAllServeTypeList(Long regionId) {
+        List<ServeAggregationTypeSimpleResDTO> result = serveService.findAllServeTypeList(regionId);
+        return result;
     }
 }
