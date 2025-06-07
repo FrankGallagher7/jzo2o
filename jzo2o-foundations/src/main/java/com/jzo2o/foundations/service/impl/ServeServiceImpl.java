@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jzo2o.common.expcetions.ForbiddenOperationException;
 import com.jzo2o.common.model.PageResult;
+import com.jzo2o.foundations.constants.RedisConstants;
 import com.jzo2o.foundations.mapper.RegionMapper;
 import com.jzo2o.foundations.mapper.ServeItemMapper;
 import com.jzo2o.foundations.mapper.ServeMapper;
@@ -18,6 +19,8 @@ import com.jzo2o.foundations.model.dto.response.*;
 import com.jzo2o.foundations.service.IServeService;
 import com.jzo2o.mysql.utils.PageHelperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -177,6 +180,17 @@ public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements
      * @param regionId
      * @return
      */
+    @Caching(
+            cacheable = {
+                    //返回数据为空，则缓存空值30分钟，这样可以避免缓存穿透
+                    @Cacheable(value = RedisConstants.CacheName.SERVE_ICON, key ="#regionId" ,
+                            unless ="#result.size() > 0",cacheManager = RedisConstants.CacheManager.THIRTY_MINUTES),
+
+                    //返回值不为空，则永久缓存数据
+                    @Cacheable(value = RedisConstants.CacheName.SERVE_ICON, key ="#regionId" ,
+                            unless ="#result.size() == 0",cacheManager = RedisConstants.CacheManager.FOREVER)
+            }
+    )
     @Override
     public List<ServeCategoryResDTO> findServeByRegionId(Long regionId) {
         // 1.判断是否有该地区，或者该区是否开放
