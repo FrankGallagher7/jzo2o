@@ -27,6 +27,8 @@ import com.jzo2o.foundations.service.IConfigRegionService;
 import com.jzo2o.foundations.service.IRegionService;
 import com.jzo2o.mysql.utils.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -147,6 +149,7 @@ public class RegionServiceImpl extends ServiceImpl<RegionMapper, Region> impleme
      *
      * @param id 区域id
      */
+    @CacheEvict(value = RedisConstants.CacheName.JZ_CACHE, key = "'ACTIVE_REGIONS'")
     @Override
     public void active(Long id) {
         //区域信息
@@ -178,6 +181,7 @@ public class RegionServiceImpl extends ServiceImpl<RegionMapper, Region> impleme
      *
      * @param id 区域id
      */
+    @CacheEvict(value = RedisConstants.CacheName.JZ_CACHE, key = "'ACTIVE_REGIONS'")
     @Override
     public void deactivate(Long id) {
         //区域信息
@@ -207,6 +211,7 @@ public class RegionServiceImpl extends ServiceImpl<RegionMapper, Region> impleme
      *
      * @return 区域简略列表
      */
+    @Cacheable(value = RedisConstants.CacheName.JZ_CACHE, key = "'ACTIVE_REGIONS'", cacheManager = RedisConstants.CacheManager.FOREVER)
     @Override
     public List<RegionSimpleResDTO> queryActiveRegionListCache() {
         return queryActiveRegionList();
