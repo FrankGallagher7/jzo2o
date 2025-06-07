@@ -23,6 +23,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -180,6 +181,7 @@ public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements
      * @param regionId
      * @return
      */
+
     @Caching(
             cacheable = {
                     //返回数据为空，则缓存空值30分钟，这样可以避免缓存穿透
@@ -205,11 +207,15 @@ public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements
         }
         // 3.切割（区域前两个，每个区域项目4个）
         // 区域
-        List<ServeCategoryResDTO> serveTypeList = list.subList(0, Math.min(list.size(), 2));
+//        List<ServeCategoryResDTO> serveTypeList = list.subList(0, Math.min(list.size(), 2));
+        List<ServeCategoryResDTO> serveTypeList = new ArrayList<>(
+                list.subList(0, Math.min(list.size(), 2))
+        );
         // 服务
         serveTypeList.forEach(s -> {
             List<ServeSimpleResDTO> serveSimpleResDTOS = s.getServeResDTOList().subList(0, Math.min(s.getServeResDTOList().size(), 4));
-            s.setServeResDTOList(serveSimpleResDTOS);
+            // 创建新的ArrayList
+            s.setServeResDTOList(new ArrayList<>(serveSimpleResDTOS));
         });
         return serveTypeList;
     }
@@ -219,6 +225,7 @@ public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements
      * @param regionId
      * @return
      */
+    @Cacheable(value = RedisConstants.CacheName.HOT_SERVE, key ="#regionId" ,cacheManager = RedisConstants.CacheManager.FOREVER)
     @Override
     public List<ServeAggregationSimpleResDTO> findHotServeByRegionId(Long regionId) {
         // 1.查询地区

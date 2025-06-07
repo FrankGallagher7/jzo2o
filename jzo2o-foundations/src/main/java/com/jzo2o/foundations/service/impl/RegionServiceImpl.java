@@ -195,7 +195,9 @@ public class RegionServiceImpl extends ServiceImpl<RegionMapper, Region> impleme
                     //删除开通区域列表
                     @CacheEvict(value = RedisConstants.CacheName.JZ_CACHE, key = "'ACTIVE_REGIONS'"),
                     //删除首页服务列表
-                    @CacheEvict(value = RedisConstants.CacheName.SERVE_ICON, allEntries = true)
+                    @CacheEvict(value = RedisConstants.CacheName.SERVE_ICON, allEntries = true),
+                    //删除热点服务缓存
+                    @CacheEvict(value = RedisConstants.CacheName.HOT_SERVE, allEntries = true)
             }
     )
     @Override
