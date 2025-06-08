@@ -2,6 +2,8 @@ package com.jzo2o.foundations.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jzo2o.common.expcetions.ForbiddenOperationException;
@@ -14,13 +16,23 @@ import com.jzo2o.foundations.model.dto.request.ServeUpsertReqDTO;
 import com.jzo2o.foundations.model.dto.response.*;
 import com.jzo2o.foundations.service.IServeService;
 import com.jzo2o.mysql.utils.PageHelperUtils;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 区域管理
@@ -322,5 +334,51 @@ public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements
         }
         // 2.根据区域id查询服务类型列表
         return baseMapper.findAllServeTypeList(regionId);
+    }
+
+    @Autowired
+    private RestHighLevelClient client;
+    /**
+     * es服务搜索
+     * @param cityCode
+     * @param keyword
+     * @param serveTypeId
+     * @return
+     */
+    @Override
+    public List<ServeSimpleResDTO> search(String cityCode, String keyword, Long serveTypeId) {
+        //1. 创建请求对象
+        SearchRequest request = new SearchRequest("serve_aggregation");
+
+        //2. 封装请求参数
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        //城市编码
+        boolQuery.must(QueryBuilders.termQuery("city_code", cityCode));
+        //服务类型id
+        if (serveTypeId != null) {
+            boolQuery.must(QueryBuilders.termQuery("serve_type_id", serveTypeId));
+        }
+        //关键词
+        if (StrUtil.isNotEmpty(keyword)) {
+            boolQuery.must(QueryBuilders.multiMatchQuery(keyword, "serve_item_name", "serve_type_name"));
+        }
+        request.source().query(boolQuery);//查询
+        request.source().sort("serve_item_sort_num", SortOrder.ASC);//排序
+
+        //3. 执行请求
+        SearchResponse response = null;
+        try {
+            response = client.search(request, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        //4. 处理返回结果   List<ServeSimpleResDTO>
+        if (response.getHits().getTotalHits().value == 0) {
+            return List.of();
+        }
+        return Arrays.stream(response.getHits().getHits())
+                .map(e -> JSONUtil.toBean(e.getSourceAsString(), ServeSimpleResDTO.class))
+                .collect(Collectors.toList());
     }
 }

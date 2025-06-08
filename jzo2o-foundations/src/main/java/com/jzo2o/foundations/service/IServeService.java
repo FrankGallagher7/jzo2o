@@ -90,4 +90,13 @@ public interface IServeService extends IService<Serve> {
      * @return
      */
     List<ServeAggregationTypeSimpleResDTO> findAllServeTypeList(Long regionId);
+
+    /**
+     * es服务搜索
+     * @param cityCode
+     * @param keyword
+     * @param serveTypeId
+     * @return
+     */
+    List<ServeSimpleResDTO> search(String cityCode, String keyword, Long serveTypeId);
 }
