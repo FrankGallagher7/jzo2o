@@ -71,6 +71,7 @@ swagger:
 logging:
   level:
     com.jzo2o: debug
+#    com.jzo2o: TRACE
     org.apache.http: info #es请求日志
 feign:
   enable: true

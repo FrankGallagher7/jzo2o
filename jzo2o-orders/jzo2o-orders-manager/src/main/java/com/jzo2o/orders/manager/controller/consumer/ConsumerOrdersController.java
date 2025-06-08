@@ -18,6 +18,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -34,6 +35,8 @@ public class ConsumerOrdersController {
     @Resource
     private IOrdersManagerService ordersManagerService;
 
+    @Autowired
+    private IOrdersCreateService ordersCreateService;
 
     @GetMapping("/{id}")
     @ApiOperation("根据订单id查询")
@@ -52,5 +55,19 @@ public class ConsumerOrdersController {
     public List<OrderSimpleResDTO> consumerQueryList(@RequestParam(value = "ordersStatus", required = false) Integer ordersStatus,
                                                      @RequestParam(value = "sortBy", required = false) Long sortBy) {
         return ordersManagerService.consumerQueryList(UserContext.currentUserId(), ordersStatus, sortBy);
+    }
+
+
+
+
+    /**
+     * 用户下单
+     * @param placeOrderReqDTO
+     * @return
+     */
+    @ApiOperation("下单接口")
+    @PostMapping("/place")
+    public PlaceOrderResDTO place(@RequestBody PlaceOrderReqDTO placeOrderReqDTO) {
+        return ordersCreateService.placeOrder(placeOrderReqDTO);
     }
 }

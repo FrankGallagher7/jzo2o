@@ -16,3 +16,4 @@ spring:
 logging:
   level:
     com.jzo2o: debug
+#    com.jzo2o: TRACE

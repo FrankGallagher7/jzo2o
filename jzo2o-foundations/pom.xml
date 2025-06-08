@@ -64,15 +64,15 @@
             <groupId>com.jzo2o</groupId>
             <artifactId>jzo2o-redis</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.jzo2o</groupId>
             <artifactId>jzo2o-canal-sync</artifactId>
         </dependency>
-
-                <dependency>
-                    <groupId>com.jzo2o</groupId>
-                    <artifactId>jzo2o-es</artifactId>
-                </dependency>
+        <dependency>
+            <groupId>com.jzo2o</groupId>
+            <artifactId>jzo2o-es</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.jzo2o</groupId>

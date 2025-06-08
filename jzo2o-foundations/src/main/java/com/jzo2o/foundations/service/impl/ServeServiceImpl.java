@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.jzo2o.api.foundations.dto.response.ServeAggregationResDTO;
 import com.jzo2o.common.expcetions.ForbiddenOperationException;
 import com.jzo2o.common.model.PageResult;
 import com.jzo2o.foundations.constants.RedisConstants;
@@ -380,5 +381,15 @@ public class ServeServiceImpl extends ServiceImpl<ServeMapper, Serve> implements
         return Arrays.stream(response.getHits().getHits())
                 .map(e -> JSONUtil.toBean(e.getSourceAsString(), ServeSimpleResDTO.class))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 根据ID查询服务详情
+     * @param id
+     * @return
+     */
+    @Override
+    public ServeAggregationResDTO findServeDetailById(Long id) {
+        return baseMapper.findServeDetailById(id);
     }
 }

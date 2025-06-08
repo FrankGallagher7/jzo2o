@@ -1,6 +1,7 @@
 package com.jzo2o.foundations.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.jzo2o.api.foundations.dto.response.ServeAggregationResDTO;
 import com.jzo2o.common.model.PageResult;
 import com.jzo2o.foundations.model.domain.Serve;
 import com.jzo2o.foundations.model.dto.request.ServePageQueryReqDTO;
@@ -99,4 +100,11 @@ public interface IServeService extends IService<Serve> {
      * @return
      */
     List<ServeSimpleResDTO> search(String cityCode, String keyword, Long serveTypeId);
+
+    /**
+     * 根据ID查询服务详情
+     * @param id
+     * @return
+     */
+    ServeAggregationResDTO findServeDetailById(Long id);
 }

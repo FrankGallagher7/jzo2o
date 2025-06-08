@@ -80,4 +80,31 @@
           and s.sale_status = 2
         group by st.id
     </select>
+    <select id="findServeDetailById" resultType="com.jzo2o.api.foundations.dto.response.ServeAggregationResDTO">
+        SELECT
+            s.id,
+            s.city_code,
+            s.price,
+            s.is_hot,
+            s.hot_time_stamp,
+            s.sale_status,
+            si.id AS serve_item_id,
+            si.`name` AS serve_item_name,
+            si.img AS serve_item_img,
+            si.detail_img,
+            si.serve_item_icon,
+            si.unit,
+            si.sort_num AS serve_item_sort_num,
+            si.serve_type_id AS serve_type_id,
+            st.`name` AS serve_type_name,
+            st.img AS serve_type_img,
+            st.serve_type_icon,
+            st.sort_num AS serve_type_sort_num
+        FROM
+            serve s
+                inner JOIN serve_item si ON si.id = s.serve_item_id
+                inner JOIN serve_type st ON st.id = si.serve_type_id
+        WHERE
+            s.id = #{id}
+    </select>
 </mapper>
