@@ -17,9 +17,14 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableAspectJAutoProxy
 public class FoundationsApplication {
     public static void main(String[] args) {
-        new SpringApplicationBuilder(FoundationsApplication.class)
-                .build(args)
-                .run(args);
-        log.info("家政服务-运营基础服务启动");
+
+        try {
+            new SpringApplicationBuilder(FoundationsApplication.class)
+                    .build(args)
+                    .run(args);
+            log.info("家政服务-运营基础服务启动");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
