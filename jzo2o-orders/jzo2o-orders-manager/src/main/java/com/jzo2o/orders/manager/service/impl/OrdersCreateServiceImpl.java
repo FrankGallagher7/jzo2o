@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -48,6 +49,8 @@ public class OrdersCreateServiceImpl extends ServiceImpl<OrdersMapper, Orders> i
 
     @Autowired
     private AddressBookApi addressBookApi;
+    @Autowired
+    private IOrdersCreateService owner;
 
     @Override
     public PlaceOrderResDTO placeOrder(PlaceOrderReqDTO placeOrderReqDTO) {
@@ -100,10 +103,15 @@ public class OrdersCreateServiceImpl extends ServiceImpl<OrdersMapper, Orders> i
 
 
         //4. 保存到数据表
-        this.save(orders);
+        owner.saveOrder(orders);
 
         //5.返回
         return new PlaceOrderResDTO(orders.getId());
+    }
+
+    @Transactional
+    public void saveOrder(Orders orders) {
+        this.save(orders);
     }
 
 

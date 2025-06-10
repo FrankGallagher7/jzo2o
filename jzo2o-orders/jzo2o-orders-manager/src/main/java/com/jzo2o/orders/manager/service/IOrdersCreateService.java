@@ -35,4 +35,10 @@ public interface IOrdersCreateService extends IService<Orders> {
      * @return
      */
     PlaceOrderResDTO placeOrder(PlaceOrderReqDTO placeOrderReqDTO);
+
+    /**
+     * 保存订单
+     * @param orders
+     */
+    void saveOrder(Orders orders);
 }
