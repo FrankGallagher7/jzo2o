@@ -15,6 +15,7 @@ import com.jzo2o.orders.base.model.domain.Orders;
 import com.jzo2o.orders.manager.model.dto.request.PlaceOrderReqDTO;
 import com.jzo2o.orders.manager.model.dto.response.PlaceOrderResDTO;
 import com.jzo2o.orders.manager.service.IOrdersCreateService;
+import com.jzo2o.redis.annotations.Lock;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -54,6 +55,17 @@ public class OrdersCreateServiceImpl extends ServiceImpl<OrdersMapper, Orders> i
 
     @Override
     public PlaceOrderResDTO placeOrder(PlaceOrderReqDTO placeOrderReqDTO) {
+        return owner.placeOrder(placeOrderReqDTO,UserContext.currentUserId());
+    }
+
+    /**
+     * 创建订单-重载--用户Id-
+     * @param placeOrderReqDTO
+     * @param userId
+     * @return
+     */
+    @Lock(formatter = "ORDERS:CREATE:LOCK:#{userId}:#{placeOrderReqDTO.serveId}", time = 30, waitTime = 1,unlock=false)
+    public PlaceOrderResDTO placeOrder(PlaceOrderReqDTO placeOrderReqDTO, Long userId) {
         //1. 调用运营微服务, 根据服务id查询
         ServeAggregationResDTO serveDto = serveApi.findById(placeOrderReqDTO.getServeId());
         if (ObjectUtil.isNull(serveDto) || serveDto.getSaleStatus() != 2) {
