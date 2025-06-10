@@ -49,4 +49,12 @@ public interface IOrdersCreateService extends IService<Orders> {
      * @param orders
      */
     void saveOrder(Orders orders);
+
+    /**
+     * 订单支付
+     * @param id
+     * @param ordersPayReqDTO
+     * @return
+     */
+    OrdersPayResDTO pay(Long id, OrdersPayReqDTO ordersPayReqDTO);
 }

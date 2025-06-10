@@ -56,10 +56,6 @@ public class ConsumerOrdersController {
                                                      @RequestParam(value = "sortBy", required = false) Long sortBy) {
         return ordersManagerService.consumerQueryList(UserContext.currentUserId(), ordersStatus, sortBy);
     }
-
-
-
-
     /**
      * 用户下单
      * @param placeOrderReqDTO
@@ -69,5 +65,18 @@ public class ConsumerOrdersController {
     @PostMapping("/place")
     public PlaceOrderResDTO place(@RequestBody PlaceOrderReqDTO placeOrderReqDTO) {
         return ordersCreateService.placeOrder(placeOrderReqDTO);
+    }
+
+    /**
+     * 订单支付
+     * @param id
+     * @param ordersPayReqDTO
+     * @return
+     */
+    @ApiOperation("订单支付")
+    @PutMapping("/pay/{id}")
+    public OrdersPayResDTO pay(@PathVariable("id") Long id, @RequestBody OrdersPayReqDTO ordersPayReqDTO) {
+        OrdersPayResDTO ordersPayResDTO = ordersCreateService.pay(id, ordersPayReqDTO);
+        return ordersPayResDTO;
     }
 }
