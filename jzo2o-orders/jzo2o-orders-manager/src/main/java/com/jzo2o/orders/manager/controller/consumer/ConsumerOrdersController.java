@@ -79,4 +79,15 @@ public class ConsumerOrdersController {
         OrdersPayResDTO ordersPayResDTO = ordersCreateService.pay(id, ordersPayReqDTO);
         return ordersPayResDTO;
     }
+
+    /**
+     * 查询订单支付结果
+     * @param id 订单id
+     * @return
+     */
+    @ApiOperation("查询订单支付结果")
+    @GetMapping("/pay/{id}/result")
+    public OrdersPayResDTO payResult(@PathVariable("id") Long id) {
+        return ordersCreateService.getPayResultFromTradServer(id);
+    }
 }
