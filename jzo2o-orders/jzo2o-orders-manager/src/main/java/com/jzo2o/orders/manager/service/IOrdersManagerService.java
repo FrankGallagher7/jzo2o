@@ -69,16 +69,4 @@ public interface IOrdersManagerService extends IService<Orders> {
      */
     void cancel(OrderCancelDTO orderCancelDTO);
 
-    /**
-     * 取消订单
-     * @param orderUpdateStatusDTO
-     */
-    void updateNoPay(OrderUpdateStatusDTO orderUpdateStatusDTO);
-
-    /**
-     * 取消订单
-     * @param orderUpdateStatusDTO
-     * @param orderCancelDTO
-     */
-    void updateDispatching(OrderUpdateStatusDTO orderUpdateStatusDTO, OrderCancelDTO orderCancelDTO);
 }

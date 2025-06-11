@@ -29,6 +29,7 @@ import com.jzo2o.orders.base.model.dto.OrderUpdateStatusDTO;
 import com.jzo2o.orders.base.service.IOrdersCommonService;
 import com.jzo2o.orders.manager.model.dto.OrderCancelDTO;
 import com.jzo2o.orders.manager.service.IOrdersManagerService;
+import com.jzo2o.orders.manager.strategy.OrderCancelStrategyManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,82 +135,15 @@ public class OrdersManagerServiceImpl extends ServiceImpl<OrdersMapper, Orders> 
 //        orderStateMachine.changeStatus(orders.getUserId(), orders.getId().toString(), OrderStatusChangeEventEnum.EVALUATE, orderSnapshotDTO);
     }
 
+    @Autowired
+    private OrderCancelStrategyManager orderCancelStrategyManager;
     /**
      * 取消订单
      * @param orderCancelDTO
      */
     @Override
     public void cancel(OrderCancelDTO orderCancelDTO) {
-        // 判断有没有这个订单
-        Orders orders = ordersMapper.selectById(orderCancelDTO.getId());
-        if (ObjectUtil.isNull(orders)) {
-            throw new RuntimeException("订单不存在");
-        }
-        // 赋值OrderCancelDTO
-        BeanUtil.copyProperties(orders,  orderCancelDTO);
-        // 判断订单状态0：待支付，100：派单中，200：待服务，300：服务中，500：订单完成，600：已取消，700：已关闭'、
-        OrderUpdateStatusDTO orderUpdateStatusDTO = BeanUtil.copyProperties(orders, OrderUpdateStatusDTO.class);
-
-        // 1.修改订单记录
-        if (ObjectUtil.equal(orders.getOrdersStatus(),OrderStatusEnum.NO_PAY.getStatus())) {
-
-            // 修改订单状态--取消待支付订单--如果为待支付，修改订单状态，插入订单取消表
-            owner.updateNoPay(orderUpdateStatusDTO);
-
-        } else if (ObjectUtil.equal(orders.getOrdersStatus(),OrderStatusEnum.DISPATCHING.getStatus())){
-            // 修改订单状态--取消已支付订单--如果为派单中，修改订单状态，插入订单取消表，插入退款表记录
-            owner.updateDispatching(orderUpdateStatusDTO,orderCancelDTO);
-        } else {
-            throw new RuntimeException("该订单状态无法取消");
-        }
-        // 2.保存取消订单记录
-        OrdersCanceled ordersCanceled = new OrdersCanceled();
-        ordersCanceled.setId(orderCancelDTO.getId());//订单id
-        ordersCanceled.setCancellerId(orderCancelDTO.getCurrentUserId());//取消人
-        ordersCanceled.setCancelerName(orderCancelDTO.getCurrentUserName());//取消人名称
-        ordersCanceled.setCancellerType(orderCancelDTO.getCurrentUserType());//取消人类型，1：普通用户，4：运营人员
-        ordersCanceled.setCancelReason(orderCancelDTO.getCancelReason());//取消原因
-        ordersCanceled.setCancelTime(LocalDateTime.now());//取消时间
-        ordersCanceledMapper.insert(ordersCanceled);
-
-
+        //调用取消订单策略管理器处理取消订单
+        orderCancelStrategyManager.cancel(orderCancelDTO);
     }
-
-
-    // 修改待支付订单记录-0
-    @Transactional(rollbackFor = Exception.class)
-    public void updateNoPay(OrderUpdateStatusDTO orderUpdateStatusDTO) {
-        //原订单状态
-        orderUpdateStatusDTO.setOriginStatus(OrderStatusEnum.NO_PAY.getStatus());
-        //目标订单状态
-        orderUpdateStatusDTO.setTargetStatus(OrderStatusEnum.CANCELED.getStatus());
-        Integer i = ordersCommonService.updateStatus(orderUpdateStatusDTO);
-        if (i <= 0) {
-            throw new ForbiddenOperationException("订单取消失败");
-        }
-    }
-    // 修改派单中订单记录-100
-    @Transactional(rollbackFor = Exception.class)
-    public void updateDispatching(OrderUpdateStatusDTO orderUpdateStatusDTO,OrderCancelDTO orderCancelDTO) {
-        //原订单状态
-        orderUpdateStatusDTO.setOriginStatus(OrderStatusEnum.DISPATCHING.getStatus());
-        //目标订单状态
-        orderUpdateStatusDTO.setTargetStatus(OrderStatusEnum.CLOSED.getStatus());
-        //退款状态
-        orderUpdateStatusDTO.setRefundStatus(OrderRefundStatusEnum.REFUNDING.getStatus());
-        Integer i = ordersCommonService.updateStatus(orderUpdateStatusDTO);
-        if (i <= 0) {
-            throw new ForbiddenOperationException("订单取消失败");
-        }
-
-        // 保存退款记录
-        OrdersRefund ordersRefund = new OrdersRefund();
-        ordersRefund.setId(orderUpdateStatusDTO.getId());//订单id
-        ordersRefund.setTradingOrderNo(orderUpdateStatusDTO.getTradingOrderNo());//支付服务交易单号
-        ordersRefund.setRealPayAmount(orderCancelDTO.getRealPayAmount());//实付金额
-        ordersRefund.setCreateTime(LocalDateTime.now());//创建时间
-
-        ordersRefundMapper.insert(ordersRefund);
-    }
-
 }
