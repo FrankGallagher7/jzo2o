@@ -9,6 +9,7 @@ import com.jzo2o.api.orders.dto.response.OrderSimpleResDTO;
 import com.jzo2o.common.model.PageResult;
 import com.jzo2o.common.model.msg.TradeStatusMsg;
 import com.jzo2o.orders.base.model.domain.Orders;
+import com.jzo2o.orders.base.model.dto.OrderUpdateStatusDTO;
 import com.jzo2o.orders.manager.model.dto.OrderCancelDTO;
 import com.jzo2o.orders.manager.model.dto.request.OrderPageQueryReqDTO;
 import com.jzo2o.orders.manager.model.dto.request.OrdersPayReqDTO;
@@ -62,4 +63,22 @@ public interface IOrdersManagerService extends IService<Orders> {
      */
     void evaluationOrder(Long ordersId);
 
+    /**
+     * 取消订单
+     * @param orderCancelDTO
+     */
+    void cancel(OrderCancelDTO orderCancelDTO);
+
+    /**
+     * 取消订单
+     * @param orderUpdateStatusDTO
+     */
+    void updateNoPay(OrderUpdateStatusDTO orderUpdateStatusDTO);
+
+    /**
+     * 取消订单
+     * @param orderUpdateStatusDTO
+     * @param orderCancelDTO
+     */
+    void updateDispatching(OrderUpdateStatusDTO orderUpdateStatusDTO, OrderCancelDTO orderCancelDTO);
 }
