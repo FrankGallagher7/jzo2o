@@ -205,4 +205,27 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
                     .update();
         }
     }
+
+    /**
+     * 活动状态到期自动切换
+     */
+    @Override
+    public void updateStatus() {
+        //对于待生效的活动到达发放开始时间状态改为进行中
+        //update activity set status = 2 where  status = 1 and  distribute_start_time <= 当前时间 and distribute_end_time > 当前时间
+        this.lambdaUpdate()
+                .eq(Activity::getStatus, NO_DISTRIBUTE.getStatus())// status = 1
+                .le(Activity::getDistributeStartTime,LocalDateTime.now())//distribute_start_time <= 当前时间
+                .gt(Activity::getDistributeEndTime,LocalDateTime.now())//distribute_end_time > 当前时间
+                .set(Activity::getStatus, DISTRIBUTING.getStatus())//set status = 2
+                .update();
+
+        //对于待生效及进行中的活动到达发放结束时间状态改为已失效
+        //update activity set status = 3 where status in (1,2) and  distribute_end_time < 当前时间
+        this.lambdaUpdate()
+                .in(Activity::getStatus, NO_DISTRIBUTE.getStatus(),DISTRIBUTING.getStatus())// status in (1,2)
+                .lt(Activity::getDistributeEndTime,LocalDateTime.now())//distribute_end_time < 当前时间
+                .set(Activity::getStatus, ActivityStatusEnum.LOSE_EFFICACY.getStatus())//set status = 3
+                .update();
+    }
 }

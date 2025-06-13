@@ -47,4 +47,9 @@ public interface IActivityService extends IService<Activity> {
      * @param id
      */
     void revoke(Long id);
+
+    /**
+     * 活动状态到期变更任务
+     */
+    void updateStatus();
 }

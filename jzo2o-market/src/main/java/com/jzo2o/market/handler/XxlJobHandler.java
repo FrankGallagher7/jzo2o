@@ -27,12 +27,18 @@ public class XxlJobHandler {
     @Resource
     private ICouponService couponService;
 
+
     /**
      * 活动状态到期变更任务
      */
     @XxlJob("updateActivityStatus")
-    public void updateActivityStatus() {
-
+    public void updateActivityStatus(){
+        log.info("定时修改活动状态...");
+        try {
+            activityService.updateStatus();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
