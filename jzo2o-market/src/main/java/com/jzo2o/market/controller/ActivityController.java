@@ -50,4 +50,14 @@ public class ActivityController {
     public ActivityInfoResDTO getDetail(@PathVariable("id") Long id) {
         return activityService.findById(id);
     }
+
+    /**
+     * 撤销活动
+     * @param id
+     */
+    @ApiOperation("活动撤销")
+    @PostMapping("/revoke/{id}")
+    public void revoke(@PathVariable("id") Long id) {
+        activityService.revoke(id);
+    }
 }

@@ -12,6 +12,7 @@ import com.jzo2o.common.model.PageResult;
 import com.jzo2o.common.utils.*;
 import com.jzo2o.market.constants.TabTypeConstants;
 import com.jzo2o.market.enums.ActivityStatusEnum;
+import com.jzo2o.market.enums.CouponStatusEnum;
 import com.jzo2o.market.mapper.ActivityMapper;
 import com.jzo2o.market.mapper.CouponMapper;
 import com.jzo2o.market.model.domain.Activity;
@@ -167,5 +168,41 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
             activityInfoResDTO.setWriteOffNum(count2);
 
             return activityInfoResDTO;
+    }
+
+    /**
+     * 撤销活动
+     * @param id
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void revoke(Long id) {
+        //1. 根据活动id查询活动的状态
+        Activity activity = this.getById(id);
+        if (ObjectUtil.isNull(activity)) {
+            throw new ForbiddenOperationException("当前活动不存在");
+        }
+        if (activity.getStatus() != NO_DISTRIBUTE.getStatus()
+                && activity.getStatus() != DISTRIBUTING.getStatus()) {
+            throw new ForbiddenOperationException("当前活动状态不允许撤销");
+        }
+
+        //2. 修改活动的状态  待生效或者进行中 ---> 作废
+        //update activity set status = 4 where id = 活动id and status in(1,2)
+        boolean flag = this.lambdaUpdate()
+                .eq(Activity::getId, id)//id = 活动id
+                .in(Activity::getStatus, NO_DISTRIBUTE.getStatus(), DISTRIBUTING.getStatus())//status in(1,2)
+                .set(Activity::getStatus, VOIDED.getStatus())//set status = 4
+                .update();
+
+        //3. 修改优惠券的状态 未使用  --> 已作废
+        //update coupon set status = 4 where activity_id = 活动id and status = 1
+        if(flag){
+            couponService.lambdaUpdate()
+                    .eq(Coupon::getActivityId,id)//activity_id = 活动id
+                    .eq(Coupon::getStatus, CouponStatusEnum.NO_USE.getStatus())//status = 1
+                    .set(Coupon::getStatus, CouponStatusEnum.VOIDED.getStatus())//status = 4
+                    .update();
+        }
     }
 }

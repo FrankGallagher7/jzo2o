@@ -41,4 +41,10 @@ public interface IActivityService extends IService<Activity> {
      * @return
      */
     ActivityInfoResDTO findById(Long id);
+
+    /**
+     * 撤销活动
+     * @param id
+     */
+    void revoke(Long id);
 }
