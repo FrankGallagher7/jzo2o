@@ -11,6 +11,7 @@ import com.jzo2o.api.market.dto.response.CouponUseResDTO;
 import com.jzo2o.common.expcetions.BadRequestException;
 import com.jzo2o.common.expcetions.CommonException;
 import com.jzo2o.common.expcetions.DBException;
+import com.jzo2o.common.expcetions.ForbiddenOperationException;
 import com.jzo2o.common.model.PageResult;
 import com.jzo2o.common.utils.*;
 import com.jzo2o.market.enums.ActivityStatusEnum;
@@ -77,4 +78,29 @@ public class CouponServiceImpl extends ServiceImpl<CouponMapper, Coupon> impleme
     private ICouponWriteOffService couponWriteOffService;
 
 
+    /**
+     * 查询优惠券领取记录
+     * @param dto
+     * @return
+     */
+    @Override
+    public PageResult<CouponInfoResDTO> findByPage(CouponOperationPageQueryReqDTO dto) {
+        //0. 校验
+        if (dto.getActivityId() == null) {
+            throw new ForbiddenOperationException("请指定活动id");
+        }
+
+        //1. 设置分页条件
+        Page<Coupon> page = PageUtils.parsePageQuery(dto, Coupon.class);
+
+        //2. 设置业务条件
+        LambdaQueryWrapper<Coupon> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Coupon::getActivityId, dto.getActivityId());
+
+        //3. 执行分页
+        page = this.page(page,wrapper);
+
+        //4. 组装返回结果
+        return PageUtils.toPage(page,CouponInfoResDTO.class);
+    }
 }

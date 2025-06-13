@@ -25,4 +25,10 @@ import java.util.List;
 public interface ICouponService extends IService<Coupon> {
 
 
+    /**
+     * 查询优惠券领取记录
+     * @param dto
+     * @return
+     */
+    PageResult<CouponInfoResDTO> findByPage(CouponOperationPageQueryReqDTO dto);
 }
