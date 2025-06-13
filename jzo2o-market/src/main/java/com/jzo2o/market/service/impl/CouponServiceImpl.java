@@ -103,4 +103,16 @@ public class CouponServiceImpl extends ServiceImpl<CouponMapper, Coupon> impleme
         //4. 组装返回结果
         return PageUtils.toPage(page,CouponInfoResDTO.class);
     }
+
+    /**
+     * 已领取优惠券自动过期任务
+     */
+    @Override
+    public void processExpireCoupon() {
+        lambdaUpdate()
+                .eq(Coupon::getStatus, CouponStatusEnum.NO_USE.getStatus())//未使用
+                .le(Coupon::getValidityTime, DateUtils.now())//有效期小于当前时间
+                .set(Coupon::getStatus, CouponStatusEnum.INVALID.getStatus())//已失效
+                .update();
+    }
 }

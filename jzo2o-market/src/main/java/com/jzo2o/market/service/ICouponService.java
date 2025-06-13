@@ -31,4 +31,9 @@ public interface ICouponService extends IService<Coupon> {
      * @return
      */
     PageResult<CouponInfoResDTO> findByPage(CouponOperationPageQueryReqDTO dto);
+
+    /**
+     * 已领取优惠券自动过期任务
+     */
+    void processExpireCoupon();
 }

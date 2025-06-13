@@ -46,7 +46,12 @@ public class XxlJobHandler {
      */
     @XxlJob("processExpireCoupon")
     public void processExpireCoupon() {
-
+        log.info("已领取优惠券自动过期任务...");
+        try {
+            couponService.processExpireCoupon();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
