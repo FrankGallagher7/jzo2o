@@ -1,5 +1,6 @@
 package com.jzo2o.market.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -55,4 +56,21 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
     private ICouponWriteOffService couponWriteOffService;
 
 
+    /**
+     * 新增或修改一个优惠券活动
+     * @param dto
+     */
+    @Override
+    public void saveOrUpdateActivity(ActivitySaveReqDTO dto) {
+        //0. 校验
+        dto.check();
+
+        //1. 将dto转换为实体类对象, (状态和库存赋值默认值)
+        Activity activity = BeanUtil.copyProperties(dto, Activity.class);
+        activity.setStatus(NO_DISTRIBUTE.getStatus());//待生效
+        activity.setStockNum(activity.getTotalNum());//库存,一开始等于发放总数量
+
+        //2. 调用service保存
+        this.saveOrUpdate(activity);
+    }
 }

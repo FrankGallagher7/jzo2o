@@ -21,4 +21,9 @@ import java.util.List;
 public interface IActivityService extends IService<Activity> {
 
 
+    /**
+     * 新增或修改一个优惠券活动
+     * @param dto
+     */
+    void saveOrUpdateActivity(ActivitySaveReqDTO dto);
 }
