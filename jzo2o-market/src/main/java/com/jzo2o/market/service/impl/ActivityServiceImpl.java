@@ -2,10 +2,12 @@ package com.jzo2o.market.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jzo2o.common.expcetions.BadRequestException;
+import com.jzo2o.common.expcetions.ForbiddenOperationException;
 import com.jzo2o.common.model.PageResult;
 import com.jzo2o.common.utils.*;
 import com.jzo2o.market.constants.TabTypeConstants;
@@ -13,6 +15,7 @@ import com.jzo2o.market.enums.ActivityStatusEnum;
 import com.jzo2o.market.mapper.ActivityMapper;
 import com.jzo2o.market.mapper.CouponMapper;
 import com.jzo2o.market.model.domain.Activity;
+import com.jzo2o.market.model.domain.Coupon;
 import com.jzo2o.market.model.domain.CouponWriteOff;
 import com.jzo2o.market.model.dto.request.ActivityQueryForPageReqDTO;
 import com.jzo2o.market.model.dto.request.ActivitySaveReqDTO;
@@ -137,5 +140,32 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
             return activityInfoResDTO;
         }).collect(Collectors.toList());
         return new PageResult<ActivityInfoResDTO>(page.getPages(), page.getTotal(), list);
+    }
+
+    /**
+     * 查询优惠券活动详情
+     * @param id
+     * @return
+     */
+    @Override
+    public ActivityInfoResDTO findById(Long id) {
+
+            //1. 根据活动id查询activity表
+            Activity activity = this.getById(id);
+            if (ObjectUtil.isNull(activity)){
+                throw new ForbiddenOperationException("当前优惠券活动不存在");
+            }
+            ActivityInfoResDTO activityInfoResDTO
+                    = BeanUtil.copyProperties(activity, ActivityInfoResDTO.class);
+
+            //2. 根据活动id查询coupon统计当前活动的领取数量
+            Integer count1 = couponService.lambdaQuery().eq(Coupon::getActivityId, id).count();
+            activityInfoResDTO.setReceiveNum(count1);
+
+            //3. 根据活动id查询coupon_write_off统计当前活动的核销数量
+            Integer count2 = couponWriteOffService.lambdaQuery().eq(CouponWriteOff::getActivityId, id).count();
+            activityInfoResDTO.setWriteOffNum(count2);
+
+            return activityInfoResDTO;
     }
 }

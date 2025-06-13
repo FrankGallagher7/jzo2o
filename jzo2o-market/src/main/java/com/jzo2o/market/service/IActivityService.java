@@ -34,4 +34,11 @@ public interface IActivityService extends IService<Activity> {
      * @return 优惠券活动分页结果
      */
     PageResult<ActivityInfoResDTO> findByPage(ActivityQueryForPageReqDTO dto);
+
+    /**
+     * 查询优惠券活动详情
+     * @param id
+     * @return
+     */
+    ActivityInfoResDTO findById(Long id);
 }
