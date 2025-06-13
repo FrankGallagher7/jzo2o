@@ -2,6 +2,9 @@ package com.jzo2o.market.mapper;
 
 import com.jzo2o.market.model.domain.Coupon;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.jzo2o.market.model.dto.response.CountResDTO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface CouponMapper extends BaseMapper<Coupon> {
 
+    // 运营端分页查询优惠券活动
+    List<CountResDTO> countByActivityIdList(List<Long> activityIdList);
 }

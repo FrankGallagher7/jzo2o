@@ -26,4 +26,12 @@ public interface IActivityService extends IService<Activity> {
      * @param dto
      */
     void saveOrUpdateActivity(ActivitySaveReqDTO dto);
+
+    /**
+     * 运营端分页查询活动
+     *
+     * @param dto 查询条件
+     * @return 优惠券活动分页结果
+     */
+    PageResult<ActivityInfoResDTO> findByPage(ActivityQueryForPageReqDTO dto);
 }
