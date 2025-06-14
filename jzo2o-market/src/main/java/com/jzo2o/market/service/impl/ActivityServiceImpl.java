@@ -307,6 +307,26 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         }).collect(Collectors.toList());
     }
 
+    //校验当前时间是否在活动期间
+    @Override
+    public ActivityInfoResDTO getActivityInfoByIdFromCache(Long id) {
+        //1. 缓存中获取活动信息
+        String jsonString = (String) redisTemplate.opsForValue().get(ACTIVITY_CACHE_LIST);
+        if (StringUtils.isEmpty(jsonString)) {
+            return null;
+        }
+
+        //2. 字符串转换为集合
+        List<ActivityInfoResDTO> activityInfoResDTOList = JSON.parseArray(jsonString, ActivityInfoResDTO.class);
+        if (CollUtil.isEmpty(activityInfoResDTOList)) {
+            return null;
+        }
+
+        //3. 过滤出指定id的活动
+        return activityInfoResDTOList.stream()
+                .filter(e -> e.getId().equals(id))
+                .findFirst().orElse(null);
+    }
 
 
     /**

@@ -43,6 +43,33 @@
 //    @Resource(name = "seizeCouponScript")
 //    private DefaultRedisScript<String> seizeCouponScript;
 //
+//    @Test
+//    void test_seizeCouponScriptLua() {
+//
+//        // argv：抢券活动id
+//        long activityId = 1933708234878722050L;
+//
+//        // argv: 用户id
+//        Long userId = 1694250327664218113L;
+//
+//        int index = (int) (activityId % 10);
+//
+//        //key: 抢券同步队列，资源库存,抢券成功列表
+//        // 同步队列redisKey
+//        String couponSeizeSyncRedisKey = RedisSyncQueueUtils.getQueueRedisKey(COUPON_SEIZE_SYNC_QUEUE_NAME, index);
+//        // 资源库存redisKey
+//        String resourceStockRedisKey = String.format(COUPON_RESOURCE_STOCK, index);
+//        // 抢券成功列表
+//        String couponSeizeListRedisKey = String.format(COUPON_SEIZE_LIST,activityId, index);
+//        // 抢券
+//        Object execute = redisTemplate.execute(seizeCouponScript,
+//                Arrays.asList(couponSeizeSyncRedisKey, resourceStockRedisKey, couponSeizeListRedisKey),activityId, userId);
+//        log.debug("seize coupon result : {}", execute);
+//    }
+//
+//
+//
+///*
 //    @BeforeEach
 //    void setUp() {
 //        CurrentUserInfo currentUserInfo = new CurrentUserInfo(1695339358949949440L, null, null, UserType.C_USER);
@@ -75,26 +102,7 @@
 //        couponService.seizeCoupon(seizeCouponReqDTO);
 //    }
 //
-//    @Test
-//    void test_seizeCouponScriptLua() {
 //
-//        //argv：抢券活动id
-//        long activityId = 1706183021040336896L;
-//        // argv: 用户id
-//        Long userId = 1694250327664218113L;
-//        int index = (int) (activityId % 10);
-//        //key: 抢券同步队列，资源库存,抢券成功列表
-//        // 同步队列redisKey
-//        String couponSeizeSyncRedisKey = RedisSyncQueueUtils.getQueueRedisKey(COUPON_SEIZE_SYNC_QUEUE_NAME, index);
-//        // 资源库存redisKey
-//        String resourceStockRedisKey = String.format(COUPON_RESOURCE_STOCK, index);
-//        // 抢券成功列表
-//        String couponSeizeListRedisKey = String.format(COUPON_SEIZE_LIST,activityId, index);
-//        // 抢券
-//        Object execute = redisTemplate.execute(seizeCouponScript, Arrays.asList(couponSeizeSyncRedisKey, resourceStockRedisKey, couponSeizeListRedisKey),
-//                activityId, userId);
-//        log.debug("seize coupon result : {}", execute);
-//    }
 //
 //    @Test
 //    void getAvailable() {
@@ -118,5 +126,5 @@
 //        couponUseBackReqDTO.setId(1703980760572669952L);
 //        couponUseBackReqDTO.setOrdersId(123456L);
 //        couponService.useBack(couponUseBackReqDTO);
-//    }
+//    }*/
 //}

@@ -8,6 +8,7 @@ import com.jzo2o.market.model.dto.request.ActivitySaveReqDTO;
 import com.jzo2o.market.model.dto.response.ActivityInfoResDTO;
 import com.jzo2o.market.model.dto.response.SeizeCouponInfoResDTO;
 
+import javax.validation.constraints.Null;
 import java.util.List;
 
 /**
@@ -65,4 +66,12 @@ public interface IActivityService extends IService<Activity> {
      * @return 活动列表
      */
     List<SeizeCouponInfoResDTO> queryForListFromCache(Integer tabType);
+
+    /**
+     * 从缓存中获取活动信息
+     *
+     * @param id 活动id
+     * @return 活动信息
+     */
+    ActivityInfoResDTO getActivityInfoByIdFromCache(@Null(message = "请求失败") Long id);
 }

@@ -36,4 +36,10 @@ public interface ICouponService extends IService<Coupon> {
      * 已领取优惠券自动过期任务
      */
     void processExpireCoupon();
+
+    /**
+     *抢券
+     * @param seizeCouponReqDTO
+     */
+    void seizeCoupon(SeizeCouponReqDTO seizeCouponReqDTO);
 }
