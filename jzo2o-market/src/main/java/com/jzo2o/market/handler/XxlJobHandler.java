@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 import static com.jzo2o.market.constants.RedisConstants.Formatter.*;
 import static com.jzo2o.market.constants.RedisConstants.RedisKey.COUPON_SEIZE_SYNC_QUEUE_NAME;
 
@@ -65,6 +67,30 @@ public class XxlJobHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Resource(name="syncThreadPool")
+    private ThreadPoolExecutor threadPoolExecutor;
+
+    /**
+     * 抢券同步队列
+     */
+    @XxlJob("seizeCouponSyncJob")
+    public void seizeCouponSyncJob() {
+        /**
+         * 开始同步，可以使用自定义线程池，如果不设置使用默认线程池
+         *
+         * @param queueName 同步队列名称
+         * @param storageType 数据存储类型，1：redis hash数据结构，2：redis list数据结构，3：redis zSet结构
+         * @param mode 1 单条执行 2批量执行
+         * @param dataSyncExecutor 数据同步线程池
+         */
+        syncManager.start(
+                COUPON_SEIZE_SYNC_QUEUE_NAME,//抢券同步队列
+                RedisSyncQueueConstants.STORAGE_TYPE_HASH,//redis同步队列存储结构hash
+                RedisSyncQueueConstants.MODE_SINGLE,//单条执行模式
+                threadPoolExecutor//线程池
+        );
     }
 
 
