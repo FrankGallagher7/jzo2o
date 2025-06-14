@@ -159,4 +159,16 @@ public class CouponServiceImpl extends ServiceImpl<CouponMapper, Coupon> impleme
             throw new CommonException(SEIZE_COUPON_FAILD, "抢券失败");
         }
     }
+
+    /**
+     * 用户端查询我的优惠券
+     * @param status
+     * @return
+     */
+    @Override
+    public PageResult<CouponInfoResDTO> queryMyCoupon(Long status) {
+        // 1.构建分页对象
+//        PageUtils.parsePageQuery(CouponInfoResDTO,Coupon.class)
+        return null;
+    }
 }
