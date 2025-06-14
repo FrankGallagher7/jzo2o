@@ -231,6 +231,9 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
                 .update();
     }
 
+    /**
+     * 活动预热(将满足条件的活动,同步到Redis中等待抢券)
+     */
     @Override
     public void preHeat() {
         //1. 查询状态是待开始或者进行中，并且发放开始时间距离现在不足1个月的活动，按照开始时间升序排列
@@ -251,6 +254,22 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
 
         //3. 将JSON字符串存入redis
         redisTemplate.opsForValue().set(ACTIVITY_CACHE_LIST,jsonStr);
+
+        //4. 将优惠券活动的库存从MySQL同步到Redis
+        //4-1 对于待生效的活动更新库存
+        list.stream().filter(e ->
+                getStatus(e.getDistributeStartTime(), e.getDistributeEndTime(), e.getStatus()) == NO_DISTRIBUTE.getStatus()
+        ).forEach(e ->
+                redisTemplate.opsForHash().put(String.format(COUPON_RESOURCE_STOCK, e.getId() % 10), e.getId(), e.getStockNum())
+        );
+
+        //4-2 对于已生效的活动如果库存已经同步则不再同步
+        list.stream().filter(e ->
+                getStatus(e.getDistributeStartTime(), e.getDistributeEndTime(), e.getStatus()) == DISTRIBUTING.getStatus()
+        ).forEach(e ->
+                //只有库存不存在的情况下, 才要进行保存操作---键不存在然后设置，存在不会覆盖原有的值
+                redisTemplate.opsForHash().putIfAbsent(String.format(COUPON_RESOURCE_STOCK, e.getId() % 10), e.getId(), e.getStockNum())
+        );
     }
 
     /**
