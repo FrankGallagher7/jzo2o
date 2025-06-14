@@ -52,4 +52,9 @@ public interface IActivityService extends IService<Activity> {
      * 活动状态到期变更任务
      */
     void updateStatus();
+
+    /**
+     * 活动预热(将满足条件的活动,同步到Redis中等待抢券)
+     */
+    void preHeat();
 }

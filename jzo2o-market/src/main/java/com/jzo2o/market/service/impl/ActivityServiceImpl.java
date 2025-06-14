@@ -228,4 +228,26 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
                 .set(Activity::getStatus, ActivityStatusEnum.LOSE_EFFICACY.getStatus())//set status = 3
                 .update();
     }
+
+    @Override
+    public void preHeat() {
+        //1. 查询状态是待开始或者进行中，并且发放开始时间距离现在不足1个月的活动，按照开始时间升序排列
+        //select * from activity where status in (1,2)  and distribute_start_time < 当前时间+1个月 order by distribute_start_time asc
+        List<Activity> list = this.lambdaQuery()
+                .in(Activity::getStatus, NO_DISTRIBUTE.getStatus(), DISTRIBUTING.getStatus())//status in (1,2)
+                .lt(Activity::getDistributeStartTime, LocalDateTime.now().plusMonths(1))//distribute_start_time < 当前时间+1个月
+                .orderByAsc(Activity::getDistributeStartTime)//order by distribute_start_time asc
+                .list();
+        if (CollUtil.isEmpty(list)){
+            list = new ArrayList<>();//防止缓存穿透
+        }
+
+
+        //2. 将查询到的数据封装到List<SeizeCouponInfoResDTO>，再转换为JSON串
+        List<SeizeCouponInfoResDTO> seizeCouponInfoResDTOS = BeanUtils.copyToList(list, SeizeCouponInfoResDTO.class);
+        String jsonStr = JsonUtils.toJsonStr(seizeCouponInfoResDTOS);
+
+        //3. 将JSON字符串存入redis
+        redisTemplate.opsForValue().set(ACTIVITY_CACHE_LIST,jsonStr);
+    }
 }
