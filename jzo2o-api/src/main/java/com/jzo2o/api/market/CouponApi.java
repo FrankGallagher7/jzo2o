@@ -1,5 +1,6 @@
 package com.jzo2o.api.market;
 
+import com.jzo2o.api.market.dto.request.CouponUseBackReqDTO;
 import com.jzo2o.api.market.dto.request.CouponUseReqDTO;
 import com.jzo2o.api.market.dto.response.AvailableCouponsResDTO;
 import com.jzo2o.api.market.dto.response.CouponUseResDTO;
@@ -32,5 +33,14 @@ public interface CouponApi {
      */
     @PostMapping("/use")
     CouponUseResDTO use(@RequestBody CouponUseReqDTO couponUseReqDTO);
+
+    /**
+     * 退回优惠券
+     *
+     * @param couponUseBackReqDTO 优惠券对象
+     */
+    @PostMapping("/useBack")
+    @ApiOperation("退回优惠券")
+    void useBack(@RequestBody CouponUseBackReqDTO couponUseBackReqDTO);
 
 }

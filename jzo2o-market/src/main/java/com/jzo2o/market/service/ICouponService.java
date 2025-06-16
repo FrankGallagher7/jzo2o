@@ -67,4 +67,10 @@ public interface ICouponService extends IService<Coupon> {
      * @return
      */
     CouponUseResDTO use(CouponUseReqDTO couponUseReqDTO);
+
+    /**
+     * 回退优惠券
+     * @param couponUseBackReqDTO
+     */
+    void useBack(CouponUseBackReqDTO couponUseBackReqDTO);
 }

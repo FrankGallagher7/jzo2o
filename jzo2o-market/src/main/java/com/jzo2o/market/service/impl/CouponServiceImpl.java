@@ -23,6 +23,7 @@ import com.jzo2o.market.enums.CouponStatusEnum;
 import com.jzo2o.market.mapper.CouponMapper;
 import com.jzo2o.market.model.domain.Activity;
 import com.jzo2o.market.model.domain.Coupon;
+import com.jzo2o.market.model.domain.CouponUseBack;
 import com.jzo2o.market.model.domain.CouponWriteOff;
 import com.jzo2o.market.model.dto.request.CouponOperationPageQueryReqDTO;
 import com.jzo2o.market.model.dto.request.SeizeCouponReqDTO;
@@ -255,5 +256,75 @@ public class CouponServiceImpl extends ServiceImpl<CouponMapper, Coupon> impleme
         CouponUseResDTO couponUseResDTO = new CouponUseResDTO();
         couponUseResDTO.setDiscountAmount(discountAmount);
         return couponUseResDTO;
+    }
+
+    /**
+     * 回退优惠券
+     * @param couponUseBackReqDTO
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void useBack(CouponUseBackReqDTO couponUseBackReqDTO) {
+        //1. 检查优惠券是否有核销记录，没有则不需要退回
+        CouponWriteOff couponWriteOff = couponWriteOffService.lambdaQuery()
+                .eq(CouponWriteOff::getOrdersId, couponUseBackReqDTO.getOrdersId())
+                .eq(CouponWriteOff::getUserId, couponUseBackReqDTO.getUserId())
+                .one();
+        if (ObjectUtil.isNull(couponWriteOff)) {
+            throw new ForbiddenOperationException("优惠券退回失败,原因: 没有对应的核销记录");
+        }
+
+        //2. 在优惠券退回表中添加记录
+        CouponUseBack couponUseBack = new CouponUseBack();
+        couponUseBack.setCouponId(couponWriteOff.getCouponId());//优惠券id 千万不要从couponUseBackReqDTO对象中获取
+        couponUseBack.setUserId(couponUseBackReqDTO.getUserId());
+        couponUseBack.setUseBackTime(LocalDateTime.now());
+        couponUseBack.setWriteOffTime(couponWriteOff.getWriteOffTime());
+        couponUseBackService.save(couponUseBack);
+
+        //3. 更新优惠券表中的状态字段，并清空订单id及使用时间字段
+        //3-1 根据优惠券id查询信息
+        Coupon coupon = this.getById(couponWriteOff.getCouponId());
+        if (ObjectUtil.isNull(coupon)) {
+            throw new ForbiddenOperationException("优惠券退回失败,原因: 没有对应的优惠券信息");
+        }
+
+        //3-2 根据活动id查询信息
+        Activity activity = activityService.getById(coupon.getActivityId());
+        if (ObjectUtil.isNull(activity)) {
+            throw new ForbiddenOperationException("优惠券退回失败,原因: 没有对应的优惠券活动信息");
+        }
+
+        //3-3 如果优惠券已过期则标记为已失效，如果未过期，则标记为未使用
+        CouponStatusEnum couponStatusEnum = coupon.getValidityTime().isAfter(LocalDateTime.now())
+                ? CouponStatusEnum.NO_USE : CouponStatusEnum.INVALID;
+
+        //3-4 如果优惠券对应的活动已作废则标记为已作废
+        if (activity.getStatus().equals(ActivityStatusEnum.VOIDED.getStatus())){
+            couponStatusEnum = CouponStatusEnum.VOIDED;
+        }
+
+        //3-5 执行优惠券的更新
+//下面的写法无法对数据表字段进行空值更新,要改为使用lambdaUpdate来处理. 此问题在测试视频中专门有讲解
+//        coupon.setStatus(couponStatusEnum.getStatus());
+//        coupon.setOrdersId(null);
+//        coupon.setUseTime(null);
+//        boolean b = this.updateById(coupon);
+
+        boolean b = this.lambdaUpdate()
+                .set(Coupon::getStatus, couponStatusEnum.getStatus())
+                .set(Coupon::getOrdersId, null)
+                .set(Coupon::getUseTime, null)
+                .eq(Coupon::getId, coupon.getId())
+                .update();
+        if (!b) {
+            throw new ForbiddenOperationException("优惠券退回失败,原因: 更新优惠券失败");
+        }
+
+        //4. 删除优惠券核销表中的相关记录
+        boolean b1 = couponWriteOffService.removeById(couponWriteOff.getId());
+        if (!b1) {
+            throw new ForbiddenOperationException("优惠券退回失败,原因: 删除优惠券核销记录失败");
+        }
     }
 }
