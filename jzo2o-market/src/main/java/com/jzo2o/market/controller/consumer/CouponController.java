@@ -6,10 +6,13 @@ import com.jzo2o.common.model.dto.PageQueryDTO;
 import com.jzo2o.market.model.dto.request.SeizeCouponReqDTO;
 import com.jzo2o.market.model.dto.response.CouponInfoResDTO;
 import com.jzo2o.market.service.ICouponService;
+import com.jzo2o.mvc.utils.UserContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController("consumerCouponController")
 @RequestMapping("/consumer/coupon")
@@ -25,9 +28,9 @@ public class CouponController {
         couponService.seizeCoupon(seizeCouponReqDTO);
     }
 
-    @ApiOperation("用户端查询我的优惠券")
+    @ApiOperation("查询我的优惠券列表")
     @GetMapping("/my")
-    public PageResult<CouponInfoResDTO> queryMyCoupon(PageQueryDTO pageQueryDTO, Long status) {
-        return couponService.queryMyCoupon(status);
+    public List<CouponInfoResDTO> queryMyCouponForPage(Long lastId, Integer status) {
+        return couponService.queryForList(lastId, UserContext.currentUserId(), status);
     }
 }

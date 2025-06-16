@@ -26,6 +26,7 @@ public class OrderCancelStrategyManager {
     Map<String, OrderCancelStrategy> beansOfType = new HashMap<>();
     @PostConstruct
     public void init() {
+        // 获取所有的订单取消策略类
         beansOfType = SpringUtil.getBeansOfType(OrderCancelStrategy.class);
         log.debug("订单取消策略类初始化到map完成！");
     }

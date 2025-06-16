@@ -161,14 +161,21 @@ public class CouponServiceImpl extends ServiceImpl<CouponMapper, Coupon> impleme
     }
 
     /**
-     * 用户端查询我的优惠券
+     * 用户端查询我的优惠券列表
+     * @param lastId
+     * @param userId
      * @param status
      * @return
      */
     @Override
-    public PageResult<CouponInfoResDTO> queryMyCoupon(Long status) {
-        // 1.构建分页对象
-//        PageUtils.parsePageQuery(CouponInfoResDTO,Coupon.class)
-        return null;
+    public List<CouponInfoResDTO> queryForList(Long lastId, Long userId, Integer status) {
+            List<Coupon> list = this.lambdaQuery()
+                    .eq(Coupon::getStatus, status)
+                    .eq(Coupon::getUserId, userId)
+                    .lt(lastId != null, Coupon::getId, lastId)
+                    .orderByDesc(Coupon::getCreateTime)
+                    .last("limit 10")
+                    .list();
+            return BeanUtils.copyToList(list, CouponInfoResDTO.class);
     }
 }

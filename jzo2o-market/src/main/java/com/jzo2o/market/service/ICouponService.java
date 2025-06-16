@@ -44,11 +44,13 @@ public interface ICouponService extends IService<Coupon> {
     void seizeCoupon(SeizeCouponReqDTO seizeCouponReqDTO);
 
 
+
     /**
-     *
-     * 用户端查询我的优惠券
+     * 用户端查询我的优惠券列表
+     * @param lastId
+     * @param userId
      * @param status
      * @return
      */
-    PageResult<CouponInfoResDTO> queryMyCoupon(Long status);
+    List<CouponInfoResDTO> queryForList(Long lastId, Long userId, Integer status);
 }
