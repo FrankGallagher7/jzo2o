@@ -72,4 +72,11 @@ public interface IOrdersCreateService extends IService<Orders> {
      * @return
      */
     List<AvailableCouponsResDTO> getAvailableCoupons(Long serveId, Integer purNum);
+
+    /**
+     * 保存订单(带优惠券)
+     * @param orders
+     * @param couponId
+     */
+    void saveOrdersWithCoupon(Orders orders, Long couponId);
 }

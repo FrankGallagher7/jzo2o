@@ -8,7 +8,9 @@ import com.jzo2o.api.customer.dto.response.AddressBookResDTO;
 import com.jzo2o.api.foundations.ServeApi;
 import com.jzo2o.api.foundations.dto.response.ServeAggregationResDTO;
 import com.jzo2o.api.market.CouponApi;
+import com.jzo2o.api.market.dto.request.CouponUseReqDTO;
 import com.jzo2o.api.market.dto.response.AvailableCouponsResDTO;
+import com.jzo2o.api.market.dto.response.CouponUseResDTO;
 import com.jzo2o.api.trade.NativePayApi;
 import com.jzo2o.api.trade.TradingApi;
 import com.jzo2o.api.trade.dto.request.NativePayReqDTO;
@@ -33,6 +35,7 @@ import com.jzo2o.orders.manager.model.dto.response.PlaceOrderResDTO;
 import com.jzo2o.orders.manager.porperties.TradeProperties;
 import com.jzo2o.orders.manager.service.IOrdersCreateService;
 import com.jzo2o.redis.annotations.Lock;
+import io.seata.spring.annotation.GlobalTransactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -131,10 +134,14 @@ public class OrdersCreateServiceImpl extends ServiceImpl<OrdersMapper, Orders> i
         orders.setDisplay(1);//用户端是否展示 1 展示
         orders.setSortBy(DateUtils.toEpochMilli(placeOrderReqDTO.getServeStartTime()) + orders.getId() % 100000);//排序字段
 
-
-        //4. 保存到数据表
-        owner.saveOrder(orders);
-
+        // 远程调用优惠券核销服务
+        if (ObjectUtil.isNull(placeOrderReqDTO.getCouponId())) {
+            // 无优惠券下单
+            owner.saveOrder(orders);
+        } else {
+            // 有优惠券下单
+            owner.saveOrdersWithCoupon(orders, placeOrderReqDTO.getCouponId());
+        }
         //5.返回
         return new PlaceOrderResDTO(orders.getId());
     }
@@ -286,6 +293,29 @@ public class OrdersCreateServiceImpl extends ServiceImpl<OrdersMapper, Orders> i
         // 3.获取可用优惠券,并返回优惠券列表
         List<AvailableCouponsResDTO> available = couponApi.getAvailable(totalAmount);
         return available;
+    }
+
+    /**
+     * 保存订单（有优惠券）
+     * @param orders
+     * @param couponId
+     */
+    @GlobalTransactional
+    public void saveOrdersWithCoupon(Orders orders,Long couponId) {
+        //1. 调用优惠券微服务核销优惠券
+        CouponUseReqDTO couponUseReqDTO = new CouponUseReqDTO();
+        couponUseReqDTO.setId(couponId);//优惠券id
+        couponUseReqDTO.setOrdersId(orders.getId());//订单id
+        couponUseReqDTO.setTotalAmount(orders.getTotalAmount());//总金额
+        CouponUseResDTO couponUseResDTO = couponApi.use(couponUseReqDTO);
+
+        //2. 修改订单的优惠金额和实付金额
+        BigDecimal discountAmount = couponUseResDTO.getDiscountAmount();
+        orders.setDiscountAmount(discountAmount);//优惠金额
+        orders.setRealPayAmount(orders.getTotalAmount().subtract(discountAmount));//实付金额
+
+        //3. 创建订单
+        this.save(orders);
     }
 
     /**

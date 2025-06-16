@@ -2,6 +2,7 @@ package com.jzo2o.market.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.db.DbRuntimeException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -210,5 +211,49 @@ public class CouponServiceImpl extends ServiceImpl<CouponMapper, Coupon> impleme
                         .reversed()).collect(Collectors.toList());
 
         return BeanUtil.copyToList(couponList,AvailableCouponsResDTO.class);
+    }
+
+    /**
+     * 核销优惠券
+     * @param couponUseReqDTO
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CouponUseResDTO use(CouponUseReqDTO couponUseReqDTO) {
+        //1. 校验优惠券信息: 只有订单金额大于等于满减金额，并且优惠券在有效状态方可使用
+        Coupon coupon = this.lambdaQuery()
+                .eq(Coupon::getUserId, UserContext.currentUserId())//- 所属用户：当前登录用户
+                .eq(Coupon::getStatus, CouponStatusEnum.NO_USE.getStatus())//- 状态：未使用
+                .ge(Coupon::getValidityTime, LocalDateTime.now())//- 在有效使用期限内
+                .le(Coupon::getAmountCondition, couponUseReqDTO.getTotalAmount())//- 满减金额：小于等于订单总额
+                .eq(Coupon::getId, couponUseReqDTO.getId())//优惠券id
+                .one();
+        if (ObjectUtil.isNull(coupon)) {
+            throw new ForbiddenOperationException("优惠券核销失败");
+        }
+
+        //2. 修改优惠券表中该优惠券的使用状态（已使用）、使用时间（当前时间）、订单id（订单微服务传入）
+        coupon.setStatus(CouponStatusEnum.USED.getStatus());//使用状态（已使用）
+        coupon.setUseTime(LocalDateTime.now());//使用时间（当前时间）
+        coupon.setOrdersId(couponUseReqDTO.getOrdersId().toString());//订单id（订单微服务传入）
+        this.updateById(coupon);
+
+        //3. 向优惠券核销表添加一条记录
+        CouponWriteOff couponWriteOff = new CouponWriteOff();
+        couponWriteOff.setCouponId(couponUseReqDTO.getId());
+        couponWriteOff.setUserId(UserContext.currentUserId());
+        couponWriteOff.setOrdersId(couponUseReqDTO.getOrdersId());
+        couponWriteOff.setActivityId(coupon.getActivityId());
+        couponWriteOff.setWriteOffTime(LocalDateTime.now());
+        couponWriteOff.setWriteOffManPhone(coupon.getUserPhone());
+        couponWriteOff.setWriteOffManName(coupon.getUserName());
+        couponWriteOffService.save(couponWriteOff);
+
+        //4. 核销成功返回最终优惠的金额
+        BigDecimal discountAmount = CouponUtils.calDiscountAmount(coupon, couponUseReqDTO.getTotalAmount());
+        CouponUseResDTO couponUseResDTO = new CouponUseResDTO();
+        couponUseResDTO.setDiscountAmount(discountAmount);
+        return couponUseResDTO;
     }
 }

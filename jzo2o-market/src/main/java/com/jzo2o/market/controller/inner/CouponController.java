@@ -1,14 +1,13 @@
 package com.jzo2o.market.controller.inner;
 
+import com.jzo2o.api.market.dto.request.CouponUseReqDTO;
 import com.jzo2o.api.market.dto.response.AvailableCouponsResDTO;
+import com.jzo2o.api.market.dto.response.CouponUseResDTO;
 import com.jzo2o.market.service.ICouponService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,5 +29,11 @@ public class CouponController{
     @GetMapping("/getAvailable")
     public List<AvailableCouponsResDTO> getAvailable(@RequestParam("totalAmount") BigDecimal totalAmount) {
         return couponService.getAvailable(totalAmount);
+    }
+
+    @ApiOperation("使用优惠券，并返回优惠金额")
+    @PostMapping("/use")
+    public CouponUseResDTO use(@RequestBody CouponUseReqDTO couponUseReqDTO) {
+        return couponService.use(couponUseReqDTO);
     }
 }
