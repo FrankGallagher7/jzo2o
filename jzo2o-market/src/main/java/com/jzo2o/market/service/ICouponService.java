@@ -53,4 +53,11 @@ public interface ICouponService extends IService<Coupon> {
      * @return
      */
     List<CouponInfoResDTO> queryForList(Long lastId, Long userId, Integer status);
+
+    /**
+     * 获取可用优惠券列表（微服务调用）
+     * @param totalAmount
+     * @return
+     */
+    List<AvailableCouponsResDTO> getAvailable(BigDecimal totalAmount);
 }

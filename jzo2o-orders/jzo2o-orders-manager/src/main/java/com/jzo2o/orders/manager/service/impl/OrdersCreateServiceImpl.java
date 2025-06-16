@@ -7,6 +7,8 @@ import com.jzo2o.api.customer.AddressBookApi;
 import com.jzo2o.api.customer.dto.response.AddressBookResDTO;
 import com.jzo2o.api.foundations.ServeApi;
 import com.jzo2o.api.foundations.dto.response.ServeAggregationResDTO;
+import com.jzo2o.api.market.CouponApi;
+import com.jzo2o.api.market.dto.response.AvailableCouponsResDTO;
 import com.jzo2o.api.trade.NativePayApi;
 import com.jzo2o.api.trade.TradingApi;
 import com.jzo2o.api.trade.dto.request.NativePayReqDTO;
@@ -39,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * <p>
@@ -259,6 +262,31 @@ public class OrdersCreateServiceImpl extends ServiceImpl<OrdersMapper, Orders> i
         return ordersPayResDTO;
     }
 
+
+    @Autowired
+    private CouponApi couponApi;
+    /**
+     *
+     * 获取可用优惠券
+     * @param serveId  服务id
+     * @param purNum   购买数量
+     * @return
+     */
+    @Override
+    public List<AvailableCouponsResDTO> getAvailableCoupons(Long serveId, Integer purNum) {
+        // 1.获取服务
+        ServeAggregationResDTO serveResDTO = serveApi.findById(serveId);
+        if (serveResDTO == null || serveResDTO.getSaleStatus() != 2) {
+            throw new ForbiddenOperationException("服务不可用");
+        }
+
+        // 2.计算订单总金额
+        BigDecimal totalAmount = serveResDTO.getPrice().multiply(new BigDecimal(purNum));
+
+        // 3.获取可用优惠券,并返回优惠券列表
+        List<AvailableCouponsResDTO> available = couponApi.getAvailable(totalAmount);
+        return available;
+    }
 
     /**
      * 生成订单id

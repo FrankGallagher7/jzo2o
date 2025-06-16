@@ -1,5 +1,7 @@
 package com.jzo2o.market.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.db.DbRuntimeException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -15,6 +17,7 @@ import com.jzo2o.common.expcetions.ForbiddenOperationException;
 import com.jzo2o.common.model.PageResult;
 import com.jzo2o.common.utils.*;
 import com.jzo2o.market.enums.ActivityStatusEnum;
+import com.jzo2o.market.enums.ActivityTypeEnum;
 import com.jzo2o.market.enums.CouponStatusEnum;
 import com.jzo2o.market.mapper.CouponMapper;
 import com.jzo2o.market.model.domain.Activity;
@@ -177,5 +180,35 @@ public class CouponServiceImpl extends ServiceImpl<CouponMapper, Coupon> impleme
                     .last("limit 10")
                     .list();
             return BeanUtils.copyToList(list, CouponInfoResDTO.class);
+    }
+
+    /**
+     * 获取可用优惠券列表（微服务调用）
+     * @param totalAmount
+     * @return
+     */
+    @Override
+    public List<AvailableCouponsResDTO> getAvailable(BigDecimal totalAmount) {
+    // 1.查询可用优惠券
+    List<Coupon> coupons = this.lambdaQuery()
+                .eq(Coupon::getUserId, UserContext.currentUserId()) //当前用户
+                .eq(Coupon::getStatus, CouponStatusEnum.NO_USE.getStatus()) //未使用
+                .ge(Coupon::getValidityTime, LocalDateTime.now()) //有效期大于当前时间
+                .le(Coupon::getAmountCondition, totalAmount) //优惠金额小于等于订单金额
+                .list();
+
+    // 2.计算优惠金额   满减  折扣
+    if (CollectionUtil.isEmpty(coupons)) {
+        return List.of();
+    }
+        List<Coupon> couponList = coupons.stream()
+                // 计算优惠金额
+                .map(coupon -> coupon.setDiscountAmount(CouponUtils.calDiscountAmount(coupon, totalAmount)))
+                // 过滤掉优惠金额小于订单金额的优惠券
+                .filter(coupon -> coupon.getDiscountAmount().compareTo(totalAmount) < 0 && coupon.getDiscountAmount()
+                        .compareTo(new BigDecimal(0)) > 0).sorted(Comparator.comparing(Coupon::getDiscountAmount)
+                        .reversed()).collect(Collectors.toList());
+
+        return BeanUtil.copyToList(couponList,AvailableCouponsResDTO.class);
     }
 }

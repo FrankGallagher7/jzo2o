@@ -64,4 +64,12 @@ public interface IOrdersCreateService extends IService<Orders> {
      * @return
      */
     OrdersPayResDTO getPayResultFromTradServer(Long id);
+
+    /**
+     * 获取可用优惠券
+     * @param serveId
+     * @param purNum
+     * @return
+     */
+    List<AvailableCouponsResDTO> getAvailableCoupons(Long serveId, Integer purNum);
 }
