@@ -24,4 +24,11 @@ public interface IWorkerCertificationAuditService extends IService<WorkerCertifi
      * @return
      */
     PageResult<WorkerCertificationAudit> pageQuery(WorkerCertificationAuditPageQueryReqDTO workerCertificationAuditPageQueryReqDTO);
+
+    /**
+     * 审核服务人员认证
+     * @param id
+     * @param certificationAuditReqDTO
+     */
+    void audit(Long id, CertificationAuditReqDTO certificationAuditReqDTO);
 }

@@ -5,6 +5,7 @@ import com.jzo2o.common.model.PageResult;
 import com.jzo2o.customer.mapper.WorkerCertificationAuditMapper;
 import com.jzo2o.customer.model.domain.WorkerCertification;
 import com.jzo2o.customer.model.domain.WorkerCertificationAudit;
+import com.jzo2o.customer.model.dto.request.CertificationAuditReqDTO;
 import com.jzo2o.customer.model.dto.request.WorkerCertificationAuditPageQueryReqDTO;
 import com.jzo2o.customer.model.dto.response.WorkerCertificationResDTO;
 import com.jzo2o.customer.service.IWorkerCertificationAuditService;
@@ -30,5 +31,11 @@ public class WorkerCertificationAuditController {
     @ApiOperation("审核服务人员认证分页查询")
     public PageResult<WorkerCertificationAudit> pageQuery(WorkerCertificationAuditPageQueryReqDTO workerCertificationAuditPageQueryReqDTO) {
         return workerCertificationAuditService.pageQuery(workerCertificationAuditPageQueryReqDTO);
+    }
+
+    @PutMapping("/audit/{id}")
+    @ApiOperation("审核服务人员认证")
+    public void audit(@PathVariable Long id, @RequestBody CertificationAuditReqDTO certificationAuditReqDTO) {
+        workerCertificationAuditService.audit(id, certificationAuditReqDTO);
     }
 }

@@ -38,6 +38,9 @@ import java.time.LocalDateTime;
 @Service
 public class WorkerCertificationAuditServiceImpl extends ServiceImpl<WorkerCertificationAuditMapper, WorkerCertificationAudit> implements IWorkerCertificationAuditService {
 
+    @Autowired
+    private WorkerCertificationMapper workerCertificationMapper;
+
     /**
      * 审核服务人员认证分页查询
      * @param dto
@@ -56,5 +59,49 @@ public class WorkerCertificationAuditServiceImpl extends ServiceImpl<WorkerCerti
                         .eq(dto.getCertificationStatus() != null, WorkerCertificationAudit::getCertificationStatus, dto.getCertificationStatus()));
 
         return PageUtils.toPage(certificationAuditPage,WorkerCertificationAudit.class);
+    }
+
+    /**
+     * 审核服务人员认证
+     * @param id  认证id
+     * @param dto
+     */
+    @Override
+    public void audit(Long id, CertificationAuditReqDTO dto) {
+        Long userId = UserContext.currentUserId();
+        String name = UserContext.currentUser().getName();
+
+        // 1.校验认证表
+        WorkerCertificationAudit workerCertificationAudit = baseMapper.selectById(id);
+        if (ObjectUtil.isEmpty(workerCertificationAudit)) {
+            throw new ForbiddenOperationException("当前认证信息不存在");
+        }
+        WorkerCertification workerCertification = workerCertificationMapper.selectById(workerCertificationAudit.getServeProviderId());
+
+        // 2.获取设置认证状态
+        Integer certificationStatus = dto.getCertificationStatus();
+        if ( dto.getCertificationStatus() == 2) { //认证成功
+            workerCertificationAudit.setAuditStatus(1); //审核状态-0：未审核，1：已审核',
+            workerCertificationAudit.setAuditorId(userId); //审核人id
+            workerCertificationAudit.setAuditorName(name); //审核人名称
+            workerCertificationAudit.setAuditTime(LocalDateTime.now()); //审核时间
+            workerCertificationAudit.setCertificationStatus(2); //1：认证中，2：认证成功，3认证失败'
+            // 修改审核表状态
+            baseMapper.updateById(workerCertificationAudit);
+            // 修改认证表状态
+            workerCertification.setCertificationStatus(2);
+            workerCertificationMapper.updateById(workerCertification);
+        }
+        // 认证失败
+        workerCertificationAudit.setAuditStatus(1); //审核状态-0：未审核，1：已审核',
+        workerCertificationAudit.setAuditorId(userId); //审核人id
+        workerCertificationAudit.setAuditorName(name); //审核人名称
+        workerCertificationAudit.setAuditTime(LocalDateTime.now()); //审核时间
+        workerCertificationAudit.setCertificationStatus(certificationStatus); //1：认证中，2：认证成功，3认证失败'
+        workerCertificationAudit.setRejectReason(dto.getRejectReason()); //认证失败原因
+        // 修改审核表状态
+        baseMapper.updateById(workerCertificationAudit);
+        // 修改认证表状态
+        workerCertification.setCertificationStatus(3);
     }
 }
