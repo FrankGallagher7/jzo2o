@@ -13,13 +13,13 @@ import com.jzo2o.customer.model.dto.response.BankAccountResDTO;
 public interface BankAccountService extends IService<BankAccount> {
 
     /**
-     * app新增或修改银行信息
+     * pc新增或修改银行信息
      * @param bankAccountUpsertReqDTO
      */
     void putBankAccount(BankAccountUpsertReqDTO bankAccountUpsertReqDTO);
 
     /**
-     * 查询当前登录用户的银行信息
+     * pc查询当前登录用户的银行信息
      * @return
      */
     BankAccountResDTO currentUserBankAccount();

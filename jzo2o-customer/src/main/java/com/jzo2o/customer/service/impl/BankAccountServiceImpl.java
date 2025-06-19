@@ -23,7 +23,7 @@ public class BankAccountServiceImpl extends ServiceImpl<BankAccountMapper, BankA
     @Autowired
     private BankAccountService bankAccountService;
     /**
-     * app新增或修改银行信息
+     * pc新增或修改银行信息
      * @param bankAccountUpsertReqDTO
      */
     @Override
@@ -34,7 +34,7 @@ public class BankAccountServiceImpl extends ServiceImpl<BankAccountMapper, BankA
     }
 
     /**
-     * 查询当前登录用户的银行信息
+     * pc查询当前登录用户的银行信息
      * @return
      */
     @Override
