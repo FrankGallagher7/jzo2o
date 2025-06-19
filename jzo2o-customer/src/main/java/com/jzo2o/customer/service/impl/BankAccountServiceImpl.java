@@ -1,9 +1,11 @@
 package com.jzo2o.customer.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jzo2o.customer.model.domain.BankAccount;
 import com.jzo2o.customer.model.dto.request.BankAccountUpsertReqDTO;
+import com.jzo2o.customer.model.dto.response.BankAccountResDTO;
 import com.jzo2o.customer.service.BankAccountService;
 import com.jzo2o.customer.mapper.BankAccountMapper;
 import com.jzo2o.mvc.utils.UserContext;
@@ -29,6 +31,19 @@ public class BankAccountServiceImpl extends ServiceImpl<BankAccountMapper, BankA
         bankAccountUpsertReqDTO.setId(UserContext.currentUserId());
         BankAccount bankAccount = BeanUtil.copyProperties(bankAccountUpsertReqDTO, BankAccount.class);
         bankAccountService.saveOrUpdate(bankAccount);
+    }
+
+    /**
+     * 查询当前登录用户的银行信息
+     * @return
+     */
+    @Override
+    public BankAccountResDTO currentUserBankAccount() {
+        BankAccount bankAccount = bankAccountService.getById(UserContext.currentUserId());
+        if (ObjectUtil.isNotNull(bankAccount)) {
+            return BeanUtil.copyProperties(bankAccount, BankAccountResDTO.class);
+        }
+        return null;
     }
 }
 

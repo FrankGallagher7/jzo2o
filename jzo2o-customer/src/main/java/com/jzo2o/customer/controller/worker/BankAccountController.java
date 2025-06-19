@@ -2,15 +2,13 @@ package com.jzo2o.customer.controller.worker;
 
 
 import com.jzo2o.customer.model.dto.request.BankAccountUpsertReqDTO;
+import com.jzo2o.customer.model.dto.response.BankAccountResDTO;
 import com.jzo2o.customer.service.BankAccountService;
 import com.jzo2o.mvc.utils.UserContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * <p>
@@ -32,5 +30,11 @@ public class BankAccountController {
     @ApiOperation("app新增或修改银行信息")
     public void putBankAccount(@RequestBody BankAccountUpsertReqDTO bankAccountUpsertReqDTO) {
         bankAccountService.putBankAccount(bankAccountUpsertReqDTO);
+    }
+
+    @ApiOperation("查询当前登录用户的银行信息")
+    @GetMapping("/currentUserBankAccount")
+    public BankAccountResDTO currentUserBankAccount() {
+        return bankAccountService.currentUserBankAccount();
     }
 }

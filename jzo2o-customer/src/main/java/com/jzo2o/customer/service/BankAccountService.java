@@ -3,6 +3,7 @@ package com.jzo2o.customer.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jzo2o.customer.model.domain.BankAccount;
 import com.jzo2o.customer.model.dto.request.BankAccountUpsertReqDTO;
+import com.jzo2o.customer.model.dto.response.BankAccountResDTO;
 
 /**
 * @author 春风
@@ -16,4 +17,10 @@ public interface BankAccountService extends IService<BankAccount> {
      * @param bankAccountUpsertReqDTO
      */
     void putBankAccount(BankAccountUpsertReqDTO bankAccountUpsertReqDTO);
+
+    /**
+     * 查询当前登录用户的银行信息
+     * @return
+     */
+    BankAccountResDTO currentUserBankAccount();
 }
