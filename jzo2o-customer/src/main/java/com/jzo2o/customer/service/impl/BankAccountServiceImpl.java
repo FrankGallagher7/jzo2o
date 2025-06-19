@@ -4,10 +4,12 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jzo2o.customer.model.domain.BankAccount;
+import com.jzo2o.customer.model.domain.ServeProvider;
 import com.jzo2o.customer.model.dto.request.BankAccountUpsertReqDTO;
 import com.jzo2o.customer.model.dto.response.BankAccountResDTO;
 import com.jzo2o.customer.service.BankAccountService;
 import com.jzo2o.customer.mapper.BankAccountMapper;
+import com.jzo2o.customer.service.IServeProviderService;
 import com.jzo2o.mvc.utils.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,13 +24,22 @@ public class BankAccountServiceImpl extends ServiceImpl<BankAccountMapper, BankA
 
     @Autowired
     private BankAccountService bankAccountService;
+    @Autowired
+    private IServeProviderService serveProviderService;
     /**
      * pc新增或修改银行信息
      * @param bankAccountUpsertReqDTO
      */
     @Override
     public void putBankAccount(BankAccountUpsertReqDTO bankAccountUpsertReqDTO) {
-        bankAccountUpsertReqDTO.setId(UserContext.currentUserId());
+        Long userId = UserContext.currentUserId();
+        // 判断用户类型
+        ServeProvider serveProvider = serveProviderService.getById(userId);
+        if (ObjectUtil.isEmpty(serveProvider)) {
+            throw new RuntimeException("用户不存在");
+        }
+        bankAccountUpsertReqDTO.setId(userId);
+        bankAccountUpsertReqDTO.setType(serveProvider.getType());
         BankAccount bankAccount = BeanUtil.copyProperties(bankAccountUpsertReqDTO, BankAccount.class);
         bankAccountService.saveOrUpdate(bankAccount);
     }
