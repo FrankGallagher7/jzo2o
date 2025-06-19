@@ -3,6 +3,9 @@ package com.jzo2o.customer.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jzo2o.customer.model.domain.AgencyCertification;
 import com.jzo2o.customer.model.dto.AgencyCertificationUpdateDTO;
+import com.jzo2o.customer.model.dto.request.AgencyCertificationAuditAddReqDTO;
+import com.jzo2o.customer.model.dto.request.CertificationAuditReqDTO;
+import com.jzo2o.customer.model.dto.request.WorkerCertificationAuditAddReqDTO;
 import com.jzo2o.customer.model.dto.response.AgencyCertificationResDTO;
 
 /**
@@ -24,4 +27,14 @@ public interface IAgencyCertificationService extends IService<AgencyCertificatio
     void updateByServeProviderId(AgencyCertificationUpdateDTO agencyCertificationUpdateDTO);
 
 
+    /**
+     * pc新增认证申请
+     */
+    void postCertification(AgencyCertificationAuditAddReqDTO agencyCertificationAuditAddReqDTO);
+
+    /**
+     * pc获取拒绝原因
+     * @return
+     */
+    CertificationAuditReqDTO getRejectReason();
 }
