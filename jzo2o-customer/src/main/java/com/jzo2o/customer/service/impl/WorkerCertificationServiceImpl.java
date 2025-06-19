@@ -10,9 +10,13 @@ import com.jzo2o.customer.enums.CertificationStatusEnum;
 import com.jzo2o.customer.mapper.WorkerCertificationMapper;
 import com.jzo2o.customer.model.domain.WorkerCertification;
 import com.jzo2o.customer.model.dto.WorkerCertificationUpdateDTO;
+import com.jzo2o.customer.model.dto.request.WorkerCertificationAuditAddReqDTO;
 import com.jzo2o.customer.model.dto.response.WorkerCertificationResDTO;
 import com.jzo2o.customer.service.IWorkerCertificationService;
+import com.jzo2o.mvc.utils.UserContext;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -45,5 +49,19 @@ public class WorkerCertificationServiceImpl extends ServiceImpl<WorkerCertificat
                 .set(ObjectUtil.isNotEmpty(workerCertificationUpdateDTO.getCertificationMaterial()), WorkerCertification::getCertificationMaterial, workerCertificationUpdateDTO.getCertificationMaterial())
                 .set(ObjectUtil.isNotEmpty(workerCertificationUpdateDTO.getCertificationTime()), WorkerCertification::getCertificationTime, workerCertificationUpdateDTO.getCertificationTime());
         super.update(updateWrapper);
+    }
+
+    /**
+     * app新增认证申请
+     * @param workerCertificationAuditAddReqDTO
+     */
+    @Override
+    public void postCertification(WorkerCertificationAuditAddReqDTO workerCertificationAuditAddReqDTO) {
+        Long userId = UserContext.currentUserId();
+        WorkerCertification workerCertification = BeanUtil.copyProperties(workerCertificationAuditAddReqDTO, WorkerCertification.class);
+        workerCertification.setId(userId); // 设置用户id
+        workerCertification.setCertificationTime(LocalDateTime.now()); // 设置认证时间
+        baseMapper.insert(workerCertification);
+
     }
 }
