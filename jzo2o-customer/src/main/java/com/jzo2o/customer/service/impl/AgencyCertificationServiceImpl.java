@@ -35,6 +35,8 @@ public class AgencyCertificationServiceImpl extends ServiceImpl<AgencyCertificat
 
     @Autowired
     private AgencyCertificationAuditMapper agencyCertificationAuditMapper;
+    @Autowired
+    private IAgencyCertificationService agencyCertificationService;
     /**
      * 根据机构id更新
      *
@@ -67,7 +69,7 @@ public class AgencyCertificationServiceImpl extends ServiceImpl<AgencyCertificat
         agencyCertification.setCertificationStatus(1);
         agencyCertification.setCertificationTime(LocalDateTime.now());
         BeanUtil.copyProperties(agencyCertificationAuditAddReqDTO, agencyCertification);
-        baseMapper.insert(agencyCertification);
+        agencyCertificationService.saveOrUpdate(agencyCertification);
 
         // 2.新增机构认证审核表
         AgencyCertificationAudit agencyCertificationAudit = new AgencyCertificationAudit();

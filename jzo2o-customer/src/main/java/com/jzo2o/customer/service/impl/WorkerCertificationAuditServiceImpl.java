@@ -103,5 +103,6 @@ public class WorkerCertificationAuditServiceImpl extends ServiceImpl<WorkerCerti
         baseMapper.updateById(workerCertificationAudit);
         // 修改认证表状态
         workerCertification.setCertificationStatus(3);
+        workerCertificationMapper.updateById(workerCertification);
     }
 }

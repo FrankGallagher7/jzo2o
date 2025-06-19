@@ -36,6 +36,8 @@ public class WorkerCertificationServiceImpl extends ServiceImpl<WorkerCertificat
 
     @Autowired
     private WorkerCertificationAuditMapper workerCertificationAuditMapper;
+    @Autowired
+    private IWorkerCertificationService workerCertificationService;
 
 
 
@@ -70,7 +72,7 @@ public class WorkerCertificationServiceImpl extends ServiceImpl<WorkerCertificat
         workerCertification.setId(userId); // 设置用户id
         workerCertification.setCertificationTime(LocalDateTime.now()); // 设置认证时间
         workerCertification.setCertificationStatus(1); // 设置认证状态
-        baseMapper.insert(workerCertification);
+        workerCertificationService.saveOrUpdate(workerCertification);
 
         // 2.新增认证审核信息
         WorkerCertificationAudit workerCertificationAudit = new WorkerCertificationAudit();
