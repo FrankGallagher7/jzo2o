@@ -2,6 +2,7 @@ package com.jzo2o.customer.controller.worker;
 
 
 import com.jzo2o.customer.model.dto.request.BankAccountUpsertReqDTO;
+import com.jzo2o.customer.model.dto.request.CertificationAuditReqDTO;
 import com.jzo2o.customer.model.dto.request.WorkerCertificationAuditAddReqDTO;
 import com.jzo2o.customer.model.dto.response.BankAccountResDTO;
 import com.jzo2o.customer.service.BankAccountService;
@@ -30,5 +31,11 @@ public class WorkCertificationController {
     @ApiOperation("app新增认证申请")
     public void postCertification(@RequestBody WorkerCertificationAuditAddReqDTO workerCertificationAuditAddReqDTO) {
         workerCertificationService.postCertification(workerCertificationAuditAddReqDTO);
+    }
+
+    @ApiOperation("获取拒绝原因")
+    @GetMapping("/rejectReason")
+    public CertificationAuditReqDTO getRejectReason() {
+        return workerCertificationService.getRejectReason();
     }
 }

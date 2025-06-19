@@ -3,6 +3,7 @@ package com.jzo2o.customer.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jzo2o.customer.model.domain.WorkerCertification;
 import com.jzo2o.customer.model.dto.WorkerCertificationUpdateDTO;
+import com.jzo2o.customer.model.dto.request.CertificationAuditReqDTO;
 import com.jzo2o.customer.model.dto.request.WorkerCertificationAuditAddReqDTO;
 
 /**
@@ -29,4 +30,10 @@ public interface IWorkerCertificationService extends IService<WorkerCertificatio
      * @param workerCertificationAuditAddReqDTO
      */
     void postCertification(WorkerCertificationAuditAddReqDTO workerCertificationAuditAddReqDTO);
+
+    /**
+     * 获取拒绝原因
+     * @return
+     */
+    CertificationAuditReqDTO getRejectReason();
 }
