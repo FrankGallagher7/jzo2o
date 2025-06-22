@@ -30,53 +30,90 @@ import java.util.List;
 public interface IOrdersCreateService extends IService<Orders> {
 
     /**
-     * 用户下单
+     * 获取可用优惠券
+     *
+     * @param serveId 服务id
+     * @param purNum  购买数量
+     * @return 可用优惠券列表
+     */
+    List<AvailableCouponsResDTO> getAvailableCoupons(Long serveId, Integer purNum);
+
+    /**
+     * 下单
+     *
      * @param placeOrderReqDTO
      * @return
      */
     PlaceOrderResDTO placeOrder(PlaceOrderReqDTO placeOrderReqDTO);
 
     /**
-     * 用户下单
-     * @param placeOrderReqDTO
-     * @param userId
-     * @return
+     * 更新支付状态
+     *
+     * @param id        订单id
+     * @param payStatus 支付状态
      */
-    PlaceOrderResDTO placeOrder(PlaceOrderReqDTO placeOrderReqDTO, Long userId);
+    Boolean updatePayStatus(Long id, Integer payStatus);
 
     /**
-     * 保存订单
+     * 更新退款状态
+     *
+     * @param id           订单id
+     * @param refundStatus 退款状态
+     * @param refundId     第三方支付的退款单号
+     * @param refundNo     支付服务退款单号
+     */
+    Boolean updateRefundStatus(Long id, Integer refundStatus, String refundId, Long refundNo);
+
+
+
+    /**
+     * 生成订单
+     *
      * @param orders
      */
-    void saveOrder(Orders orders);
+    void add(Orders orders);
+
+    /**
+     * 生成订单 使用优惠券
+     *
+     * @param orders   订单信息
+     * @param couponId 优惠券id
+     */
+    void addWithCoupon(Orders orders, Long couponId);
+
+    /**
+     * 支付成功， 其他信息暂且不填
+     *
+     * @param tradeStatusMsg 交易状态消息
+     */
+    void paySuccess(TradeStatusMsg tradeStatusMsg);
 
     /**
      * 订单支付
-     * @param id
-     * @param ordersPayReqDTO
-     * @return
+     *
+     * @param id              订单id
+     * @param ordersPayReqDTO 订单支付请求体
+     * @return 订单支付响应体
      */
     OrdersPayResDTO pay(Long id, OrdersPayReqDTO ordersPayReqDTO);
 
-    /**
-     * 查询订单支付结果
-     * @param id
-     * @return
-     */
-    OrdersPayResDTO getPayResultFromTradServer(Long id);
+
 
     /**
-     * 获取可用优惠券
-     * @param serveId
-     * @param purNum
-     * @return
+     * 请求支付服务查询支付结果
+     *
+     * @param id 订单id
+     * @return 订单支付响应体
      */
-    List<AvailableCouponsResDTO> getAvailableCoupons(Long serveId, Integer purNum);
+    int getPayResultFromTradServer(Long id);
 
     /**
-     * 保存订单(带优惠券)
-     * @param orders
-     * @param couponId
+     * 查询超时订单id列表
+     *
+     * @param count 数量
+     * @return 订单id列表
      */
-    void saveOrdersWithCoupon(Orders orders, Long couponId);
+    List<Orders> queryOverTimePayOrdersListByCount(Integer count);
+
+
 }

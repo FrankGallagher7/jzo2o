@@ -1,63 +1,32 @@
 package com.jzo2o.customer.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.jzo2o.customer.model.domain.BankAccount;
-import com.jzo2o.customer.model.domain.ServeProvider;
-import com.jzo2o.customer.model.dto.request.BankAccountUpsertReqDTO;
-import com.jzo2o.customer.model.dto.response.BankAccountResDTO;
-import com.jzo2o.customer.service.BankAccountService;
 import com.jzo2o.customer.mapper.BankAccountMapper;
-import com.jzo2o.customer.service.IServeProviderService;
-import com.jzo2o.mvc.utils.UserContext;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.jzo2o.customer.model.domain.BankAccount;
+import com.jzo2o.customer.model.dto.request.BankAccountUpsertReqDTO;
+import com.jzo2o.customer.service.IBankAccountService;
 import org.springframework.stereotype.Service;
 
 /**
-* @author 春风
-* @description 针对表【bank_account(银行账户)】的数据库操作Service实现
-* @createDate 2025-06-19 10:43:41
-*/
+ * <p>
+ * 银行账户 服务实现类
+ * </p>
+ *
+ * @author itcast
+ * @since 2023-09-06
+ */
 @Service
-public class BankAccountServiceImpl extends ServiceImpl<BankAccountMapper, BankAccount> implements BankAccountService{
-
-    @Autowired
-    private BankAccountService bankAccountService;
-    @Autowired
-    private IServeProviderService serveProviderService;
-    /**
-     * pc新增或修改银行信息
-     * @param bankAccountUpsertReqDTO
-     */
-    @Override
-    public void putBankAccount(BankAccountUpsertReqDTO bankAccountUpsertReqDTO) {
-        Long userId = UserContext.currentUserId();
-        // 判断用户类型
-        ServeProvider serveProvider = serveProviderService.getById(userId);
-        if (ObjectUtil.isEmpty(serveProvider)) {
-            throw new RuntimeException("用户不存在");
-        }
-        bankAccountUpsertReqDTO.setId(userId);
-        bankAccountUpsertReqDTO.setType(serveProvider.getType());
-        BankAccount bankAccount = BeanUtil.copyProperties(bankAccountUpsertReqDTO, BankAccount.class);
-        bankAccountService.saveOrUpdate(bankAccount);
-    }
+public class BankAccountServiceImpl extends ServiceImpl<BankAccountMapper, BankAccount> implements IBankAccountService {
 
     /**
-     * pc查询当前登录用户的银行信息
-     * @return
+     * 新增或更新
+     *
+     * @param bankAccountUpsertReqDTO 银行账号新增或更新模型
      */
     @Override
-    public BankAccountResDTO currentUserBankAccount() {
-        BankAccount bankAccount = bankAccountService.getById(UserContext.currentUserId());
-        if (ObjectUtil.isNotNull(bankAccount)) {
-            return BeanUtil.copyProperties(bankAccount, BankAccountResDTO.class);
-        }
-        return null;
+    public void upsert(BankAccountUpsertReqDTO bankAccountUpsertReqDTO) {
+        BankAccount bankAccount = BeanUtil.toBean(bankAccountUpsertReqDTO, BankAccount.class);
+        super.saveOrUpdate(bankAccount);
     }
 }
-
-
-
-

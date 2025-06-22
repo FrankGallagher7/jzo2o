@@ -18,6 +18,44 @@ import java.util.List;
  * @since 2023-07-06
  */
 public interface IAddressBookService extends IService<AddressBook> {
+    /**
+     * 地址薄新增
+     *
+     * @param addressBookUpsertReqDTO 插入更新地址薄
+     */
+    void add(AddressBookUpsertReqDTO addressBookUpsertReqDTO);
+
+    /**
+     * 地址薄修改
+     *
+     * @param id                      地址薄id
+     * @param addressBookUpsertReqDTO 插入更新地址薄
+     */
+    void update(Long id, AddressBookUpsertReqDTO addressBookUpsertReqDTO);
+
+    /**
+     * 地址薄设为默认/取消默认
+     *
+     * @param userId   用户id
+     * @param id   地址薄id
+     * @param flag 是否为默认地址，0：否，1：是
+     */
+    void updateDefaultStatus(Long userId,Long id, Integer flag);
+
+    /**
+     * 分页查询
+     *
+     * @param addressBookPageQueryReqDTO 查询条件
+     * @return 分页结果
+     */
+    PageResult<AddressBookResDTO> page(AddressBookPageQueryReqDTO addressBookPageQueryReqDTO);
+
+    /**
+     * 获取默认地址
+     *
+     * @return 默认地址
+     */
+    AddressBookResDTO defaultAddress();
 
     /**
      * 根据用户id和城市编码获取地址
@@ -27,43 +65,4 @@ public interface IAddressBookService extends IService<AddressBook> {
      * @return 地址编码
      */
     List<AddressBookResDTO> getByUserIdAndCity(Long userId, String cityCode);
-
-    /**
-     * 查询用户默认地址值
-     * @return
-     */
-    AddressBookResDTO findDefaultAddress();
-
-    /**
-     * 新增地址
-     * @param addressBookResDTO
-     */
-    void saveAddress(AddressBookResDTO addressBookResDTO);
-
-    /**
-     * 分页查询地址
-     * @param pageQueryReqDTO
-     * @return
-     */
-    PageResult<AddressBookResDTO> pageQuery(AddressBookPageQueryReqDTO pageQueryReqDTO);
-
-    /**
-     * 根据地址id对地址进行编辑
-     * @param id
-     * @param addressBookResDTO
-     */
-    void updateAddress(Long id, AddressBookResDTO addressBookResDTO);
-
-    /**
-     * 批量删除地址
-     * @param ids
-     */
-    void removeUpdateByIds(List<Long> ids);
-
-    /**
-     * 设置默认地址
-     * @param id
-     * @param flag
-     */
-    void setDefaultAddress(Long id, Long flag);
 }

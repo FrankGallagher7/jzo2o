@@ -1,50 +1,63 @@
 package com.jzo2o.orders.manager.strategy.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.jzo2o.api.trade.enums.RefundStatusEnum;
+import com.jzo2o.api.trade.enums.TradingStateEnum;
 import com.jzo2o.common.expcetions.ForbiddenOperationException;
+import com.jzo2o.orders.base.config.OrderStateMachine;
+import com.jzo2o.orders.base.enums.OrderStatusChangeEventEnum;
 import com.jzo2o.orders.base.enums.OrderStatusEnum;
-import com.jzo2o.orders.base.mapper.OrdersCanceledMapper;
-import com.jzo2o.orders.base.mapper.OrdersMapper;
-import com.jzo2o.orders.base.mapper.OrdersRefundMapper;
 import com.jzo2o.orders.base.model.domain.OrdersCanceled;
-import com.jzo2o.orders.base.model.dto.OrderUpdateStatusDTO;
-import com.jzo2o.orders.base.service.IOrdersCommonService;
+import com.jzo2o.orders.base.model.dto.OrderSnapshotDTO;
 import com.jzo2o.orders.manager.model.dto.OrderCancelDTO;
-import com.jzo2o.orders.manager.service.IOrdersManagerService;
+import com.jzo2o.orders.manager.service.IOrdersCanceledService;
 import com.jzo2o.orders.manager.strategy.OrderCancelStrategy;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 
-//普通用户取消未支付订单--0
-@Component("1:NO_PAY")//用户类型:订单状态
+/**
+ * 普通用户对待支付状态订单取消
+ *
+ * @author itcast
+ * @create 2023/8/7 17:10
+ **/
+@Component("1:NO_PAY")
 public class CommonUserNoPayOrderCancelStrategy implements OrderCancelStrategy {
-    @Autowired
-    private IOrdersCommonService ordersCommonService;
-    @Autowired
-    private OrdersCanceledMapper ordersCanceledMapper;
+    @Resource
+    private OrderStateMachine orderStateMachine;
+    @Resource
+    private IOrdersCanceledService ordersCanceledService;
 
+    /**
+     * 订单取消
+     *
+     * @param orderCancelDTO 订单取消模型
+     */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void cancel(OrderCancelDTO orderCancelDTO) {
-        // 1.更新订单状态
-        OrderUpdateStatusDTO orderUpdateStatusDTO = new OrderUpdateStatusDTO();
-        orderUpdateStatusDTO.setId(orderCancelDTO.getId()); // 订单id
-        orderUpdateStatusDTO.setOriginStatus(OrderStatusEnum.NO_PAY.getStatus()); //原订单状态
-        orderUpdateStatusDTO.setTargetStatus(OrderStatusEnum.CANCELED.getStatus()); //目标订单状态
-        Integer i = ordersCommonService.updateStatus(orderUpdateStatusDTO);
-        if (i <= 0) {
-            throw new ForbiddenOperationException("订单取消失败");
+        //1.校验是否为本人操作
+        if (ObjectUtil.notEqual(orderCancelDTO.getUserId(), orderCancelDTO.getCurrentUserId())) {
+            throw new ForbiddenOperationException("非本人操作");
         }
-        // 2.保存取消订单记录
-        OrdersCanceled ordersCanceled = new OrdersCanceled();
-        ordersCanceled.setId(orderCancelDTO.getId());//订单id
-        ordersCanceled.setCancellerId(orderCancelDTO.getCurrentUserId());//取消人
-        ordersCanceled.setCancelerName(orderCancelDTO.getCurrentUserName());//取消人名称
-        ordersCanceled.setCancellerType(orderCancelDTO.getCurrentUserType());//取消人类型，1：普通用户，4：运营人员
-        ordersCanceled.setCancelReason(orderCancelDTO.getCancelReason());//取消原因
-        ordersCanceled.setCancelTime(LocalDateTime.now());//取消时间
-        ordersCanceledMapper.insert(ordersCanceled);
+
+        //2.构建订单快照更新模型
+        OrderSnapshotDTO orderSnapshotDTO = OrderSnapshotDTO.builder()
+                .cancellerId(orderCancelDTO.getCurrentUserId())
+                .cancelerName(orderCancelDTO.getCurrentUserName())
+                .cancellerType(orderCancelDTO.getCurrentUserType())
+                .cancelReason(orderCancelDTO.getCancelReason())
+                .cancelTime(LocalDateTime.now())
+                .build();
+
+        //3.保存订单取消记录
+        OrdersCanceled ordersCanceled = BeanUtil.toBean(orderSnapshotDTO, OrdersCanceled.class);
+        ordersCanceled.setId(orderCancelDTO.getId());
+        ordersCanceledService.save(ordersCanceled);
+
+        //4.订单状态变更
+        orderStateMachine.changeStatus(orderCancelDTO.getUserId(), orderCancelDTO.getId().toString(), OrderStatusChangeEventEnum.CANCEL, orderSnapshotDTO);
     }
 }

@@ -1,40 +1,42 @@
 package com.jzo2o.customer.controller.worker;
 
-
+import cn.hutool.core.bean.BeanUtil;
+import com.jzo2o.common.model.CurrentUserInfo;
+import com.jzo2o.customer.model.domain.BankAccount;
 import com.jzo2o.customer.model.dto.request.BankAccountUpsertReqDTO;
 import com.jzo2o.customer.model.dto.response.BankAccountResDTO;
-import com.jzo2o.customer.service.BankAccountService;
+import com.jzo2o.customer.service.IBankAccountService;
 import com.jzo2o.mvc.utils.UserContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
+
 /**
- * <p>
- * 银行账户表 前端控制器
- * </p>
- *
  * @author itcast
- * @since 2023-07-18
  */
-@RestController("workerServeBankController")
+@RestController("workerBankAccountController")
 @RequestMapping("/worker/bank-account")
-@Api(tags = "服务端 - 服务银行相关接口")
+@Api(tags = "服务端 - 银行账户信息相关接口")
 public class BankAccountController {
 
-    @Autowired
-    private BankAccountService bankAccountService;
+    @Resource
+    private IBankAccountService bankAccountService;
 
     @PostMapping
-    @ApiOperation("app新增或修改银行信息")
-    public void putBankAccount(@RequestBody BankAccountUpsertReqDTO bankAccountUpsertReqDTO) {
-        bankAccountService.putBankAccount(bankAccountUpsertReqDTO);
+    @ApiOperation("新增或更新银行账号信息")
+    public void queryByServeProviderId(@RequestBody BankAccountUpsertReqDTO bankAccountUpsertReqDTO) {
+        CurrentUserInfo currentUserInfo = UserContext.currentUser();
+        bankAccountUpsertReqDTO.setId(currentUserInfo.getId());
+        bankAccountUpsertReqDTO.setType(currentUserInfo.getUserType());
+        bankAccountService.upsert(bankAccountUpsertReqDTO);
     }
 
-    @ApiOperation("查询当前登录用户的银行信息")
     @GetMapping("/currentUserBankAccount")
-    public BankAccountResDTO currentUserBankAccount() {
-        return bankAccountService.currentUserBankAccount();
+    @ApiOperation("获取当前用户银行账号")
+    public BankAccountResDTO queryCurrentUserBankAccount() {
+        BankAccount bankAccount = bankAccountService.getById(UserContext.currentUserId());
+        return BeanUtil.toBean(bankAccount, BankAccountResDTO.class);
     }
 }

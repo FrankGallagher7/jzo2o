@@ -7,29 +7,34 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.jzo2o.common.expcetions.ForbiddenOperationException;
+import com.jzo2o.common.enums.EnableStatusEnum;
+import com.jzo2o.common.model.CurrentUserInfo;
 import com.jzo2o.common.model.PageResult;
+import com.jzo2o.customer.enums.CertificationStatusEnum;
 import com.jzo2o.customer.mapper.WorkerCertificationAuditMapper;
-import com.jzo2o.customer.mapper.WorkerCertificationMapper;
+import com.jzo2o.customer.model.domain.AgencyCertificationAudit;
 import com.jzo2o.customer.model.domain.WorkerCertification;
 import com.jzo2o.customer.model.domain.WorkerCertificationAudit;
 import com.jzo2o.customer.model.dto.WorkerCertificationUpdateDTO;
 import com.jzo2o.customer.model.dto.request.CertificationAuditReqDTO;
 import com.jzo2o.customer.model.dto.request.WorkerCertificationAuditAddReqDTO;
 import com.jzo2o.customer.model.dto.request.WorkerCertificationAuditPageQueryReqDTO;
+import com.jzo2o.customer.model.dto.response.RejectReasonResDTO;
+import com.jzo2o.customer.model.dto.response.WorkerCertificationAuditResDTO;
+import com.jzo2o.customer.service.IServeProviderService;
 import com.jzo2o.customer.service.IWorkerCertificationAuditService;
 import com.jzo2o.customer.service.IWorkerCertificationService;
 import com.jzo2o.mvc.utils.UserContext;
 import com.jzo2o.mysql.utils.PageUtils;
-import jodd.util.StringUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 
 /**
  * <p>
- * 服务人员认证信息表 服务实现类
+ * 服务人员认证审核表 服务实现类
  * </p>
  *
  * @author itcast
@@ -37,72 +42,109 @@ import java.time.LocalDateTime;
  */
 @Service
 public class WorkerCertificationAuditServiceImpl extends ServiceImpl<WorkerCertificationAuditMapper, WorkerCertificationAudit> implements IWorkerCertificationAuditService {
-
-    @Autowired
-    private WorkerCertificationMapper workerCertificationMapper;
+    @Resource
+    private IWorkerCertificationService workerCertificationService;
+    @Resource
+    private IServeProviderService serveProviderService;
 
     /**
-     * 审核服务人员认证分页查询
-     * @param dto
-     * @return
+     * 服务人员申请资质认证
+     *
+     * @param workerCertificationAuditAddReqDTO 认证申请请求体
      */
     @Override
-    public PageResult<WorkerCertificationAudit> pageQuery(WorkerCertificationAuditPageQueryReqDTO dto) {
-        Page<WorkerCertificationAudit> page = PageUtils.parsePageQuery(dto, WorkerCertificationAudit.class);
-
-
-        Page<WorkerCertificationAudit> certificationAuditPage = baseMapper.selectPage(page,
-                new LambdaQueryWrapper<WorkerCertificationAudit>()
-                        .eq(StringUtil.isNotEmpty(dto.getIdCardNo()), WorkerCertificationAudit::getIdCardNo, dto.getIdCardNo())
-                        .like(StringUtil.isNotEmpty(dto.getName()), WorkerCertificationAudit::getName, dto.getName())
-                        .eq(dto.getAuditStatus() != null, WorkerCertificationAudit::getAuditStatus, dto.getAuditStatus())
-                        .eq(dto.getCertificationStatus() != null, WorkerCertificationAudit::getCertificationStatus, dto.getCertificationStatus()));
-
-        return PageUtils.toPage(certificationAuditPage,WorkerCertificationAudit.class);
+    @Transactional
+    public void applyCertification(WorkerCertificationAuditAddReqDTO workerCertificationAuditAddReqDTO) {
+        //1.新增申请资质认证记录
+        WorkerCertificationAudit workerCertificationAudit = BeanUtil.toBean(workerCertificationAuditAddReqDTO, WorkerCertificationAudit.class);
+        //默认未审核
+        workerCertificationAudit.setAuditStatus(0);
+        baseMapper.insert(workerCertificationAudit);
+        //查询认证记录
+        Long serveProviderId = workerCertificationAuditAddReqDTO.getServeProviderId();
+        WorkerCertification workerCertification = workerCertificationService.getById(serveProviderId);
+        if(ObjectUtil.isNotNull(workerCertification)){
+            //2.将认证信息状态更新为认证中
+            workerCertification.setCertificationStatus(CertificationStatusEnum.PROGRESSING.getStatus());//认证中
+            workerCertificationService.updateById(workerCertification);
+        }else{
+            workerCertification = new WorkerCertification();
+            workerCertification.setId(serveProviderId);
+            workerCertification.setCertificationStatus(CertificationStatusEnum.PROGRESSING.getStatus());//认证中
+            workerCertificationService.save(workerCertification);
+        }
     }
 
     /**
-     * 审核服务人员认证
-     * @param id  认证id
-     * @param dto
+     * 审核认证信息
+     *
+     * @param id                       申请记录id
+     * @param certificationAuditReqDTO 审核请求
      */
     @Override
-    public void audit(Long id, CertificationAuditReqDTO dto) {
-        Long userId = UserContext.currentUserId();
-        String name = UserContext.currentUser().getName();
+    @Transactional
+    public void auditCertification(Long id, CertificationAuditReqDTO certificationAuditReqDTO) {
+        //1.更新申请记录
+        CurrentUserInfo currentUserInfo = UserContext.currentUser();
+        LambdaUpdateWrapper<WorkerCertificationAudit> updateWrapper = Wrappers.<WorkerCertificationAudit>lambdaUpdate()
+                .eq(WorkerCertificationAudit::getId, id)
+                .set(WorkerCertificationAudit::getAuditStatus, 1)//已审核
+                .set(WorkerCertificationAudit::getAuditorId, currentUserInfo.getId())//审核人id
+                .set(WorkerCertificationAudit::getAuditorName, currentUserInfo.getName())//审核人名称
+                .set(WorkerCertificationAudit::getAuditTime, LocalDateTime.now())//审核时间
+                .set(WorkerCertificationAudit::getCertificationStatus, certificationAuditReqDTO.getCertificationStatus())//认证状态
+                .set(ObjectUtil.isNotEmpty(certificationAuditReqDTO.getRejectReason()), WorkerCertificationAudit::getRejectReason, certificationAuditReqDTO.getRejectReason());//驳回原因
+        super.update(updateWrapper);
 
-        // 1.校验认证表
+        //2.更新认证信息，如果认证成功，需要将各认证属性也更新
         WorkerCertificationAudit workerCertificationAudit = baseMapper.selectById(id);
-        if (ObjectUtil.isEmpty(workerCertificationAudit)) {
-            throw new ForbiddenOperationException("当前认证信息不存在");
-        }
-        WorkerCertification workerCertification = workerCertificationMapper.selectById(workerCertificationAudit.getServeProviderId());
+        WorkerCertificationUpdateDTO workerCertificationUpdateDTO = new WorkerCertificationUpdateDTO();
+        workerCertificationUpdateDTO.setId(workerCertificationAudit.getServeProviderId());
+        workerCertificationUpdateDTO.setCertificationStatus(certificationAuditReqDTO.getCertificationStatus());
+        if (ObjectUtil.equal(CertificationStatusEnum.SUCCESS.getStatus(), certificationAuditReqDTO.getCertificationStatus())) {
+            //如果认证成功，需要更新服务人员/机构名称
+            serveProviderService.updateNameById(workerCertificationAudit.getServeProviderId(), workerCertificationAudit.getName());
 
-        // 2.获取设置认证状态
-        Integer certificationStatus = dto.getCertificationStatus();
-        if ( dto.getCertificationStatus() == 2) { //认证成功
-            workerCertificationAudit.setAuditStatus(1); //审核状态-0：未审核，1：已审核',
-            workerCertificationAudit.setAuditorId(userId); //审核人id
-            workerCertificationAudit.setAuditorName(name); //审核人名称
-            workerCertificationAudit.setAuditTime(LocalDateTime.now()); //审核时间
-            workerCertificationAudit.setCertificationStatus(2); //1：认证中，2：认证成功，3认证失败'
-            // 修改审核表状态
-            baseMapper.updateById(workerCertificationAudit);
-            // 修改认证表状态
-            workerCertification.setCertificationStatus(2);
-            workerCertificationMapper.updateById(workerCertification);
+            workerCertificationUpdateDTO.setName(workerCertificationAudit.getName());
+            workerCertificationUpdateDTO.setIdCardNo(workerCertificationAudit.getIdCardNo());
+            workerCertificationUpdateDTO.setFrontImg(workerCertificationAudit.getFrontImg());
+            workerCertificationUpdateDTO.setBackImg(workerCertificationAudit.getBackImg());
+            workerCertificationUpdateDTO.setCertificationMaterial(workerCertificationAudit.getCertificationMaterial());
+            workerCertificationUpdateDTO.setCertificationTime(workerCertificationAudit.getAuditTime());
         }
-        // 认证失败
-        workerCertificationAudit.setAuditStatus(1); //审核状态-0：未审核，1：已审核',
-        workerCertificationAudit.setAuditorId(userId); //审核人id
-        workerCertificationAudit.setAuditorName(name); //审核人名称
-        workerCertificationAudit.setAuditTime(LocalDateTime.now()); //审核时间
-        workerCertificationAudit.setCertificationStatus(certificationStatus); //1：认证中，2：认证成功，3认证失败'
-        workerCertificationAudit.setRejectReason(dto.getRejectReason()); //认证失败原因
-        // 修改审核表状态
-        baseMapper.updateById(workerCertificationAudit);
-        // 修改认证表状态
-        workerCertification.setCertificationStatus(3);
-        workerCertificationMapper.updateById(workerCertification);
+        workerCertificationService.updateById(workerCertificationUpdateDTO);
+    }
+
+    /**
+     * 分页查询
+     *
+     * @param workerCertificationAuditPageQueryReqDTO 分页查询条件
+     * @return 分页结果
+     */
+    @Override
+    public PageResult<WorkerCertificationAuditResDTO> pageQuery(WorkerCertificationAuditPageQueryReqDTO workerCertificationAuditPageQueryReqDTO) {
+        Page<WorkerCertificationAudit> page = PageUtils.parsePageQuery(workerCertificationAuditPageQueryReqDTO, WorkerCertificationAudit.class);
+        LambdaQueryWrapper<WorkerCertificationAudit> queryWrapper = Wrappers.<WorkerCertificationAudit>lambdaQuery()
+                .like(ObjectUtil.isNotEmpty(workerCertificationAuditPageQueryReqDTO.getName()), WorkerCertificationAudit::getName, workerCertificationAuditPageQueryReqDTO.getName())
+                .eq(ObjectUtil.isNotEmpty(workerCertificationAuditPageQueryReqDTO.getIdCardNo()), WorkerCertificationAudit::getIdCardNo, workerCertificationAuditPageQueryReqDTO.getIdCardNo())
+                .eq(ObjectUtil.isNotEmpty(workerCertificationAuditPageQueryReqDTO.getAuditStatus()), WorkerCertificationAudit::getAuditStatus, workerCertificationAuditPageQueryReqDTO.getAuditStatus())
+                .eq(ObjectUtil.isNotEmpty(workerCertificationAuditPageQueryReqDTO.getCertificationStatus()), WorkerCertificationAudit::getCertificationStatus, workerCertificationAuditPageQueryReqDTO.getCertificationStatus());
+        Page<WorkerCertificationAudit> result = baseMapper.selectPage(page, queryWrapper);
+        return PageUtils.toPage(result, WorkerCertificationAuditResDTO.class);
+    }
+
+    /**
+     * 查询当前用户最近驳回原因
+     *
+     * @return 驳回原因
+     */
+    @Override
+    public RejectReasonResDTO queryCurrentUserLastRejectReason() {
+        LambdaQueryWrapper<WorkerCertificationAudit> queryWrapper = Wrappers.<WorkerCertificationAudit>lambdaQuery()
+                .eq(WorkerCertificationAudit::getServeProviderId, UserContext.currentUserId())
+                .orderByDesc(WorkerCertificationAudit::getCreateTime)
+                .last("limit 1");
+        WorkerCertificationAudit workerCertificationAudit = baseMapper.selectOne(queryWrapper);
+        return new RejectReasonResDTO(workerCertificationAudit.getRejectReason());
     }
 }
